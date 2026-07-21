@@ -1,0 +1,176 @@
+import Link from 'next/link';
+import { getCachedClubs } from '../../../lib/queries';
+import { coordinatorSignupAction } from '../../actions/auth';
+
+export const revalidate = 0; // Ensure fresh list of clubs on load
+
+export default async function CoordinatorSignupPage() {
+  const clubs = await getCachedClubs();
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center px-6 py-12 relative overflow-hidden">
+      
+      {/* Background glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-500/5 rounded-full blur-[128px] -z-10 pointer-events-none" />
+
+      <div className="w-full max-w-lg">
+        <div className="text-center mb-8">
+          <Link href="/" className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
+            CampusClub
+          </Link>
+          <h2 className="text-xl font-bold mt-4">Coordinator Registration</h2>
+          <p className="text-slate-400 text-sm mt-2">Submit application to manage your student club</p>
+        </div>
+
+        <div className="glass-panel p-8 rounded-3xl shadow-xl border border-white/10">
+          <form action={coordinatorSignupAction as any} className="space-y-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  required
+                  className="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 transition text-slate-100 placeholder:text-slate-600"
+                  placeholder="Jane Smith"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
+                  Phone Number
+                </label>
+                <input
+                  type="tel"
+                  name="phone"
+                  required
+                  className="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 transition text-slate-100 placeholder:text-slate-600"
+                  placeholder="+1 (555) 987-6543"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
+                University Email
+              </label>
+              <input
+                type="email"
+                name="email"
+                required
+                className="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 transition text-slate-100 placeholder:text-slate-600"
+                placeholder="jane.smith@university.edu"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
+                Password
+              </label>
+              <input
+                type="password"
+                name="password"
+                required
+                className="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 transition text-slate-100 placeholder:text-slate-600"
+                placeholder="Min 6 characters"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
+                College / Institute
+              </label>
+              <input
+                type="text"
+                name="college"
+                required
+                className="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 transition text-slate-100 placeholder:text-slate-600"
+                placeholder="School of Business"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
+                  Select Club
+                </label>
+                <select
+                  name="clubId"
+                  required
+                  className="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 transition text-slate-100"
+                >
+                  <option value="">Choose a club</option>
+                  {clubs.map((club: any) => (
+                    <option key={club.id} value={club.id}>
+                      {club.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
+                  Occupation / Role
+                </label>
+                <select
+                  name="occupation"
+                  required
+                  className="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 transition text-slate-100"
+                >
+                  <option value="member">Member</option>
+                  <option value="president">President</option>
+                  <option value="vice_president">Vice President</option>
+                  <option value="treasurer">Treasurer</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-2">
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
+                  Profile Photo (JPG/PNG/WEBP)
+                </label>
+                <input
+                  type="file"
+                  name="photo"
+                  accept="image/jpeg,image/png,image/webp"
+                  required
+                  className="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-500/10 file:text-indigo-400 hover:file:bg-indigo-500/20"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
+                  Proof of Occupation (Image/PDF)
+                </label>
+                <input
+                  type="file"
+                  name="proof"
+                  accept="image/jpeg,image/png,image/webp,application/pdf"
+                  required
+                  className="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-500/10 file:text-indigo-400 hover:file:bg-indigo-500/20"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              className="w-full mt-4 py-3.5 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl font-semibold text-sm hover:opacity-95 transition shadow-lg shadow-blue-500/10"
+            >
+              Submit Application
+            </button>
+          </form>
+
+          <div className="mt-8 pt-6 border-t border-white/5 text-center text-xs text-slate-400">
+            Already have a profile?{' '}
+            <Link href="/login" className="text-blue-400 hover:underline">
+              Sign In
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

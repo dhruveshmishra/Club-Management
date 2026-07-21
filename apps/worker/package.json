@@ -1,0 +1,23 @@
+{
+  "name": "worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "dotenv -e ../../.env tsx watch src/index.ts",
+    "start": "dotenv -e ../../.env tsx src/index.ts",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@repo/redis": "*",
+    "@repo/supabase": "*",
+    "@supabase/supabase-js": "^2.110.8",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.3",
+    "dotenv-cli": "^7.4.2",
+    "tsx": "^4.19.1",
+    "typescript": "5.9.2"
+  }
+}

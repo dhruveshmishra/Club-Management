@@ -4,6 +4,55 @@ import { createAdminServiceClient, createServerSideClient } from '../../lib/supa
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+
+async function uploadFile(supabase: any, bucket: string, path: string, file: File): Promise<string> {
+  if (file.size > MAX_FILE_SIZE) {
+    throw new Error(`File ${file.name} exceeds the 5MB size limit.`);
+  }
+
+  if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+    throw new Error(`File type ${file.type} is not allowed. Only JPEG, PNG, WEBP, and PDF are supported.`);
+  }
+
+  const arrayBuffer = await file.arrayBuffer();
+  const buffer = new Uint8Array(arrayBuffer);
+
+  const { data, error } = await supabase.storage
+    .from(bucket)
+    .upload(path, buffer, {
+      contentType: file.type,
+      upsert: true,
+    });
+
+  let finalPath = path;
+
+  if (error) {
+    if (error.message.includes('Bucket not found') || error.message.includes('not found')) {
+      await supabase.storage.createBucket(bucket, { public: true });
+      const retry = await supabase.storage.from(bucket).upload(path, buffer, {
+        contentType: file.type,
+        upsert: true,
+      });
+
+      if (retry.error) {
+        throw new Error(`Failed to upload file after creating bucket: ${retry.error.message}`);
+      }
+      
+      finalPath = retry.data?.path || path;
+    } else {
+      console.error('Storage upload error:', error);
+      throw new Error(`Failed to upload file: ${error.message}`);
+    }
+  } else if (data) {
+    finalPath = data.path;
+  }
+
+  const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(finalPath);
+  return publicUrl;
+}
+
 // Helper to log admin audits
 async function logAdminAction(
   supabase: any,
@@ -206,11 +255,15 @@ export async function deleteUserAction(userId: string) {
 export async function createClubAction(formData: FormData) {
   const name = formData.get('name') as string;
   const description = formData.get('description') as string;
-  const logoUrl = formData.get('logoUrl') as string;
+  const logoFile = formData.get('logoFile') as File | null;
   const eligibility = formData.get('eligibilityCriteria') as string;
 
-  if (!name || !description || !logoUrl || !eligibility) {
+  if (!name || !description || !logoFile || !eligibility) {
     return { error: 'All fields are required' };
+  }
+
+  if (logoFile.size === 0) {
+    return { error: 'Logo file is required' };
   }
 
   const supabase = await createServerSideClient();
@@ -220,6 +273,8 @@ export async function createClubAction(formData: FormData) {
   const adminClient = createAdminServiceClient();
 
   try {
+    const logoUrl = await uploadFile(adminClient, 'club-logos', `logos/${Date.now()}_${logoFile.name}`, logoFile);
+
     const { data: club, error } = await adminClient
       .from('clubs')
       .insert({
@@ -246,7 +301,7 @@ export async function createClubAction(formData: FormData) {
 export async function updateClubAction(clubId: string, formData: FormData) {
   const name = formData.get('name') as string;
   const description = formData.get('description') as string;
-  const logoUrl = formData.get('logoUrl') as string;
+  const logoFile = formData.get('logoFile') as File | null;
   const eligibility = formData.get('eligibilityCriteria') as string;
 
   const supabase = await createServerSideClient();
@@ -256,19 +311,25 @@ export async function updateClubAction(clubId: string, formData: FormData) {
   const adminClient = createAdminServiceClient();
 
   try {
+    const updatePayload: any = {
+      name,
+      description,
+      eligibility_criteria: eligibility,
+    };
+
+    if (logoFile && logoFile.size > 0) {
+      const logoUrl = await uploadFile(adminClient, 'club-logos', `logos/${Date.now()}_${logoFile.name}`, logoFile);
+      updatePayload.logo_url = logoUrl;
+    }
+
     const { error } = await adminClient
       .from('clubs')
-      .update({
-        name,
-        description,
-        logo_url: logoUrl,
-        eligibility_criteria: eligibility,
-      })
+      .update(updatePayload)
       .eq('id', clubId);
 
     if (error) throw error;
 
-    await logAdminAction(adminClient, admin.id, 'UPDATE_CLUB', 'clubs', clubId, { name, description, logoUrl, eligibility });
+    await logAdminAction(adminClient, admin.id, 'UPDATE_CLUB', 'clubs', clubId, { name, description, hasNewLogo: logoFile && logoFile.size > 0, eligibility });
 
     revalidatePath('/clubs');
     revalidatePath('/');

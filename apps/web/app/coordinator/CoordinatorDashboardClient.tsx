@@ -2,10 +2,11 @@
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
-import { Calendar, Users, FileText, Plus, Trash2, LogOut, Briefcase, Edit2, X } from 'lucide-react';
+import { Calendar, Users, FileText, Plus, Trash2, LogOut, Briefcase, Edit2, X, User } from 'lucide-react';
 import { createEventAction, deleteEventAction, updateEventAction } from '../actions/coordinator';
 import { useRouter } from 'next/navigation';
 import { ThemeToggle } from '../components/ThemeToggle';
+import { CoordinatorProfileForm } from '../components/CoordinatorProfileForm';
 
 export function CoordinatorDashboardClient({
   coord,
@@ -23,7 +24,7 @@ export function CoordinatorDashboardClient({
   isTreasurer: boolean;
 }) {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'events' | 'registrations' | 'members'>('events');
+  const [activeTab, setActiveTab] = useState<'events' | 'registrations' | 'members' | 'profile'>('events');
   const [eventsFilter, setEventsFilter] = useState<'all' | 'my'>('all');
   const [editingEventId, setEditingEventId] = useState<string | null>(null);
 
@@ -101,6 +102,13 @@ export function CoordinatorDashboardClient({
             <Users className="w-4 h-4" />
             Members
           </button>
+          <button 
+            onClick={() => setActiveTab('profile')}
+            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors ${activeTab === 'profile' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}
+          >
+            <User className="w-4 h-4" />
+            My Profile
+          </button>
         </nav>
 
         <div className="p-4 border-t border-border">
@@ -128,6 +136,7 @@ export function CoordinatorDashboardClient({
             {activeTab === 'events' && 'Events Dashboard'}
             {activeTab === 'registrations' && 'Event Registrations'}
             {activeTab === 'members' && 'Club Members'}
+            {activeTab === 'profile' && 'My Profile'}
           </h1>
           <div className="flex items-center gap-4">
             {isTreasurer && (
@@ -398,6 +407,12 @@ export function CoordinatorDashboardClient({
                 </div>
               </div>
 
+            </div>
+          )}
+
+          {activeTab === 'profile' && (
+            <div className="space-y-6 max-w-5xl">
+              <CoordinatorProfileForm profile={coord} />
             </div>
           )}
 

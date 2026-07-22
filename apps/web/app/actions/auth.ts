@@ -60,11 +60,13 @@ async function uploadFile(supabase: any, bucket: string, path: string, file: Fil
 }
 
 export async function loginAction(formData: FormData) {
-  const email = formData.get('email') as string;
+  const email = (formData.get('email') as string)?.trim().toLowerCase();
   const password = formData.get('password') as string;
+  const role = formData.get('role') as string;
+  const roleQuery = role ? `&role=${role}` : '';
 
   if (!email || !password) {
-    redirect('/login?error=Email+and+password+are+required');
+    redirect(`/login?error=Email+and+password+are+required${roleQuery}`);
   }
 
   const supabase = await createServerSideClient();
@@ -76,7 +78,7 @@ export async function loginAction(formData: FormData) {
 
   if (authError || !authData.user) {
     const msg = encodeURIComponent(authError?.message || 'Invalid credentials');
-    redirect(`/login?error=${msg}`);
+    redirect(`/login?error=${msg}${roleQuery}`);
   }
 
   const user = authData.user;
@@ -92,13 +94,13 @@ export async function loginAction(formData: FormData) {
 
   if (profileError || !profile) {
     await supabase.auth.signOut();
-    redirect('/login?error=User+profile+not+found.');
+    redirect(`/login?error=User+profile+not+found.${roleQuery}`);
   }
 
   if (profile.role === 'admin') {
     // Reject admins on the web portal
     await supabase.auth.signOut();
-    redirect('/login?error=Admin+users+must+log+in+to+the+admin+console.');
+    redirect(`/login?error=Admin+users+must+log+in+to+the+admin+console.${roleQuery}`);
   }
 
   if (profile.role === 'coordinator') {
@@ -111,17 +113,17 @@ export async function loginAction(formData: FormData) {
 
     if (coordError || !coord) {
       await supabase.auth.signOut();
-      redirect('/login?error=Coordinator+profile+not+found.');
+      redirect(`/login?error=Coordinator+profile+not+found.${roleQuery}`);
     }
 
     if (coord.status === 'pending') {
       await supabase.auth.signOut();
-      redirect('/login?message=pending_approval');
+      redirect(`/login?message=pending_approval${roleQuery}`);
     }
 
     if (coord.status === 'rejected') {
       await supabase.auth.signOut();
-      redirect('/login?error=Your+coordinator+application+has+been+rejected.');
+      redirect(`/login?error=Your+coordinator+application+has+been+rejected.${roleQuery}`);
     }
 
     redirect('/coordinator');
@@ -135,7 +137,7 @@ export async function loginAction(formData: FormData) {
 }
 
 export async function studentSignupAction(formData: FormData) {
-  const email = formData.get('email') as string;
+  const email = (formData.get('email') as string)?.trim().toLowerCase();
   const password = formData.get('password') as string;
   const name = formData.get('name') as string;
   const college = formData.get('college') as string;
@@ -213,7 +215,7 @@ export async function studentSignupAction(formData: FormData) {
 }
 
 export async function coordinatorSignupAction(formData: FormData) {
-  const email = formData.get('email') as string;
+  const email = (formData.get('email') as string)?.trim().toLowerCase();
   const password = formData.get('password') as string;
   const name = formData.get('name') as string;
   const college = formData.get('college') as string;

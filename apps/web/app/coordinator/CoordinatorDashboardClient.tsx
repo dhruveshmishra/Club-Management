@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import Link from 'next/link';
-import { Calendar, Users, FileText, Plus, Trash2, LogOut, Briefcase } from 'lucide-react';
-import { createEventAction, deleteEventAction } from '../actions/coordinator';
+import { Calendar, Users, FileText, Plus, Trash2, LogOut, Briefcase, Edit2, X } from 'lucide-react';
+import { createEventAction, deleteEventAction, updateEventAction } from '../actions/coordinator';
 import { useRouter } from 'next/navigation';
 import { ThemeToggle } from '../components/ThemeToggle';
 
@@ -25,6 +25,7 @@ export function CoordinatorDashboardClient({
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'events' | 'registrations' | 'members'>('events');
   const [eventsFilter, setEventsFilter] = useState<'all' | 'my'>('all');
+  const [editingEventId, setEditingEventId] = useState<string | null>(null);
 
   // Filter events based on selected tab
   const displayedEvents = eventsFilter === 'all' 
@@ -41,6 +42,16 @@ export function CoordinatorDashboardClient({
     } else {
       const form = document.getElementById('create-event-form') as HTMLFormElement;
       if (form) form.reset();
+      router.refresh();
+    }
+  };
+
+  const handleUpdateEvent = async (eventId: string, formData: FormData) => {
+    const res = await updateEventAction(eventId, formData);
+    if (res && res.error) {
+      alert('Error updating event: ' + res.error);
+    } else {
+      setEditingEventId(null);
       router.refresh();
     }
   };
@@ -98,9 +109,8 @@ export function CoordinatorDashboardClient({
             <p className="text-[10px] text-muted-foreground uppercase">{coord.occupation}</p>
           </div>
           
-          <form action="/api/auth/logout" method="POST"> {/* We will handle logout in layout or page, but simple link to /login is safer if auth.ts route changes */}
+          <form action="/api/auth/logout" method="POST">
             <button type="submit" formAction={async () => {
-                // simple hack to force a logout action if needed, but since it's a client component, we'll just redirect to a logout route or let the server action handle it from page.tsx
                 window.location.href = '/login'; 
             }} className="w-full flex items-center justify-center gap-2 px-4 py-2 text-xs font-semibold text-destructive border border-destructive/20 bg-destructive/5 hover:bg-destructive/10 rounded-xl transition-colors">
               <LogOut className="w-3.5 h-3.5" />
@@ -221,44 +231,99 @@ export function CoordinatorDashboardClient({
                 ) : (
                   displayedEvents.map((evt: any) => (
                     <div key={evt.id} className="bg-card p-6 rounded-2xl border border-border shadow-sm flex flex-col justify-between hover:border-primary/50 transition-colors">
-                      <Link href={`/student/event/${evt.id}`} className="block flex-1 group">
-                        <div className="flex items-center justify-between mb-4">
-                          <span className={`text-[10px] font-bold uppercase px-2.5 py-1 rounded-md ${
-                            evt.status === 'upcoming' ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400' : 
-                            evt.status === 'ongoing' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 
-                            'bg-slate-500/10 text-slate-600 dark:text-slate-400'
-                          }`}>
-                            {evt.status}
-                          </span>
-                          {eventsFilter === 'all' && evt.clubs && (
-                            <span className="text-xs font-semibold text-muted-foreground bg-muted px-2.5 py-1 rounded-md flex items-center gap-2">
-                              {evt.clubs.logo_url && <img src={evt.clubs.logo_url} alt="Logo" className="w-3.5 h-3.5 rounded-sm" />}
-                              {evt.clubs.name}
-                            </span>
-                          )}
-                        </div>
-                        <h4 className="font-bold text-lg text-foreground leading-tight mb-2 group-hover:text-primary transition-colors">{evt.title}</h4>
-                        <p className="text-sm text-muted-foreground line-clamp-2 mb-6">{evt.description}</p>
-                        
-                        <div className="grid grid-cols-2 gap-y-3 text-xs text-muted-foreground font-medium">
-                          <div className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /> Start: {new Date(evt.start_date).toLocaleDateString()}</div>
-                          <div className="flex items-center gap-1.5"><FileText className="w-3.5 h-3.5" /> Deadline: {new Date(evt.registration_deadline).toLocaleDateString()}</div>
-                          <div className="flex items-center gap-1.5">👥 Team Size: {evt.team_size}</div>
-                          <div className="flex items-center gap-1.5">💰 Pool: ${evt.prize_pool}</div>
-                        </div>
-                      </Link>
-                      
-                      {/* Actions */}
-                      <div className="mt-6 pt-4 border-t border-border flex items-center justify-between">
-                        <Link href={`/student/event/${evt.id}`} className="text-xs font-bold text-primary hover:underline">
-                          View Event Page →
-                        </Link>
-                        {canManageEvents && eventsFilter === 'my' && (
-                          <button onClick={() => handleDeleteEvent(evt.id)} className="flex items-center gap-1.5 px-3 py-1.5 bg-destructive/10 text-destructive hover:bg-destructive/20 rounded-lg text-xs font-bold transition">
-                            <Trash2 className="w-3.5 h-3.5" /> Delete
-                          </button>
-                        )}
-                      </div>
+                      {editingEventId === evt.id ? (
+                        <form action={(formData) => handleUpdateEvent(evt.id, formData)} className="flex-1 flex flex-col gap-3">
+                          {/* We need to pass hidden fields for the existing event data that isn't being edited so updateEventAction works */}
+                          <input type="hidden" name="prizePool" value={evt.prize_pool || 0} />
+                          <input type="hidden" name="teamSize" value={evt.team_size || 1} />
+                          <input type="hidden" name="mode" value={evt.mode} />
+                          <input type="hidden" name="status" value={evt.status} />
+                          <input type="hidden" name="startDate" value={evt.start_date} />
+                          <input type="hidden" name="endDate" value={evt.end_date} />
+                          <input type="hidden" name="registrationDeadline" value={evt.registration_deadline} />
+                          <input type="hidden" name="highlightsText" value={evt.highlights_text || ''} />
+
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs font-bold text-primary">Edit Event Details</span>
+                            <button type="button" onClick={() => setEditingEventId(null)} className="p-1 text-muted-foreground hover:text-foreground bg-muted rounded-md">
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                          
+                          <input 
+                            type="text" 
+                            name="title" 
+                            defaultValue={evt.title} 
+                            required 
+                            className="w-full bg-background border border-input rounded-xl px-3 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground" 
+                            placeholder="Event Title"
+                          />
+                          
+                          <textarea 
+                            name="description" 
+                            defaultValue={evt.description} 
+                            required 
+                            rows={4} 
+                            className="w-full bg-background border border-input rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground resize-none" 
+                            placeholder="Event Description"
+                          />
+                          
+                          <div className="mt-auto pt-4 flex gap-2">
+                            <button type="submit" className="flex-1 py-2 bg-primary text-primary-foreground rounded-lg text-xs font-bold shadow-sm hover:bg-primary/90 transition">
+                              Save Changes
+                            </button>
+                            <button type="button" onClick={() => setEditingEventId(null)} className="flex-1 py-2 bg-muted text-foreground rounded-lg text-xs font-bold shadow-sm hover:bg-muted/80 transition">
+                              Cancel
+                            </button>
+                          </div>
+                        </form>
+                      ) : (
+                        <>
+                          <Link href={`/student/event/${evt.id}`} className="block flex-1 group">
+                            <div className="flex items-center justify-between mb-4">
+                              <span className={`text-[10px] font-bold uppercase px-2.5 py-1 rounded-md ${
+                                evt.status === 'upcoming' ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400' : 
+                                evt.status === 'ongoing' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 
+                                'bg-slate-500/10 text-slate-600 dark:text-slate-400'
+                              }`}>
+                                {evt.status}
+                              </span>
+                              {eventsFilter === 'all' && evt.clubs && (
+                                <span className="text-xs font-semibold text-muted-foreground bg-muted px-2.5 py-1 rounded-md flex items-center gap-2">
+                                  {evt.clubs.logo_url && <img src={evt.clubs.logo_url} alt="Logo" className="w-3.5 h-3.5 rounded-sm" />}
+                                  {evt.clubs.name}
+                                </span>
+                              )}
+                            </div>
+                            <h4 className="font-bold text-lg text-foreground leading-tight mb-2 group-hover:text-primary transition-colors">{evt.title}</h4>
+                            <p className="text-sm text-muted-foreground line-clamp-2 mb-6">{evt.description}</p>
+                            
+                            <div className="grid grid-cols-2 gap-y-3 text-xs text-muted-foreground font-medium">
+                              <div className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /> Start: {new Date(evt.start_date).toLocaleDateString()}</div>
+                              <div className="flex items-center gap-1.5"><FileText className="w-3.5 h-3.5" /> Deadline: {new Date(evt.registration_deadline).toLocaleDateString()}</div>
+                              <div className="flex items-center gap-1.5">👥 Team Size: {evt.team_size}</div>
+                              <div className="flex items-center gap-1.5">💰 Pool: ${evt.prize_pool}</div>
+                            </div>
+                          </Link>
+                          
+                          {/* Actions */}
+                          <div className="mt-6 pt-4 border-t border-border flex items-center justify-between">
+                            <Link href={`/student/event/${evt.id}`} className="text-xs font-bold text-primary hover:underline">
+                              View Event Page →
+                            </Link>
+                            {canManageEvents && eventsFilter === 'my' && (
+                              <div className="flex items-center gap-2">
+                                <button onClick={() => setEditingEventId(evt.id)} className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 rounded-lg text-xs font-bold transition">
+                                  <Edit2 className="w-3.5 h-3.5" /> Edit
+                                </button>
+                                <button onClick={() => handleDeleteEvent(evt.id)} className="flex items-center gap-1.5 px-3 py-1.5 bg-destructive/10 text-destructive hover:bg-destructive/20 rounded-lg text-xs font-bold transition">
+                                  <Trash2 className="w-3.5 h-3.5" /> Delete
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </>
+                      )}
                     </div>
                   ))
                 )}

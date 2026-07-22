@@ -4,8 +4,11 @@ import { coordinatorSignupAction } from '../../actions/auth';
 
 export const revalidate = 0; // Ensure fresh list of clubs on load
 
-export default async function CoordinatorSignupPage() {
+export default async function CoordinatorSignupPage({ searchParams }: { searchParams: Promise<{ error?: string, message?: string }> }) {
   const clubs = await getCachedClubs();
+  const params = await searchParams;
+  const error = params.error;
+  const message = params.message;
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center px-6 py-12 relative overflow-hidden">
@@ -21,6 +24,18 @@ export default async function CoordinatorSignupPage() {
           <h2 className="text-xl font-bold mt-4">Coordinator Registration</h2>
           <p className="text-slate-400 text-sm mt-2">Submit application to manage your student club</p>
         </div>
+
+        {error && (
+          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-sm text-center">
+            {error}
+          </div>
+        )}
+        
+        {message && (
+          <div className="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-xl text-sm text-center">
+            {message}
+          </div>
+        )}
 
         <div className="glass-panel p-8 rounded-3xl shadow-xl border border-white/10">
           <form action={coordinatorSignupAction as any} className="space-y-5">

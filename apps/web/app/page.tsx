@@ -3,7 +3,10 @@ import { getCachedClubs, getCachedEvents } from '../lib/queries';
 
 export const revalidate = 0; // Ensure fresh SSR load
 
-export default async function LandingPage() {
+export default async function LandingPage({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
+  const params = await searchParams;
+  const message = params?.message as string | undefined;
+
   const clubs = await getCachedClubs();
   const events = await getCachedEvents();
 
@@ -18,6 +21,17 @@ export default async function LandingPage() {
       {/* Background gradients */}
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-[128px] -z-10 pointer-events-none" />
       <div className="absolute bottom-10 right-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-[128px] -z-10 pointer-events-none" />
+
+      {message && (
+        <div className="bg-emerald-500/10 border-b border-emerald-500/20 text-emerald-400 px-6 py-4 text-sm font-medium z-50 relative flex items-center justify-center">
+          <span className="flex-1 text-center">{message}</span>
+          <Link href="/" className="absolute right-4 p-1.5 hover:bg-emerald-500/20 rounded-full transition-colors" aria-label="Dismiss message">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+            </svg>
+          </Link>
+        </div>
+      )}
 
       {/* Header/Navbar */}
       <header className="sticky top-0 z-50 glass-panel border-b border-white/5 py-4">

@@ -6,9 +6,18 @@ import { cookies } from 'next/headers';
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder';
 
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
+
 // Client Component helper
 export const createClient = () => {
   return createBrowserClient<Database>(supabaseUrl, supabaseAnonKey) as any;
+};
+
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+
+// Anonymous Server helper (no cookies, avoids RLS recursion on public data)
+export const createServiceClient = () => {
+  return createSupabaseClient<Database>(supabaseUrl, supabaseServiceKey) as any;
 };
 
 // Server Component / Server Action / Route Handler helper

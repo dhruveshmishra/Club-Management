@@ -47,42 +47,12 @@ export async function middleware(request: NextRequest) {
     if (!user) {
       return NextResponse.redirect(new URL('/login', request.url));
     }
-    // Fetch profile
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    if (!profile || profile.role !== 'student') {
-      return NextResponse.redirect(new URL('/login', request.url));
-    }
   }
 
   // Protect coordinator portal
   if (nextUrl.startsWith('/coordinator')) {
     if (!user) {
       return NextResponse.redirect(new URL('/login', request.url));
-    }
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    if (!profile || profile.role !== 'coordinator') {
-      return NextResponse.redirect(new URL('/login', request.url));
-    }
-
-    // Check status
-    const { data: coord } = await supabase
-      .from('coordinator_profiles')
-      .select('status')
-      .eq('user_id', user.id)
-      .single();
-
-    if (!coord || coord.status !== 'approved') {
-      return NextResponse.redirect(new URL('/login?message=pending_approval', request.url));
     }
   }
 

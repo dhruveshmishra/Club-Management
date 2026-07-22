@@ -1,7 +1,10 @@
 import Link from 'next/link';
 import { studentSignupAction } from '../../actions/auth';
 
-export default function StudentSignupPage() {
+export default async function StudentSignupPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+  const params = await searchParams;
+  const error = params.error;
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center px-6 py-12 relative overflow-hidden">
       
@@ -16,6 +19,12 @@ export default function StudentSignupPage() {
           <h2 className="text-xl font-bold mt-4 font-sans">Create Student Profile</h2>
           <p className="text-slate-400 text-sm mt-2">Get instant access to campus events</p>
         </div>
+
+        {error && (
+          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-sm text-center">
+            {error}
+          </div>
+        )}
 
         <div className="glass-panel p-8 rounded-3xl shadow-xl border border-white/10">
           <form action={studentSignupAction as any} className="space-y-5">

@@ -1,54 +1,68 @@
 import Link from 'next/link';
-import { getCachedClubs, getCachedEvents } from '../lib/queries';
+import { 
+  Activity, 
+  Users, 
+  CreditCard, 
+  Calendar, 
+  Check, 
+  X, 
+  Star, 
+  TrendingUp, 
+  Sparkles, 
+  Zap
+} from 'lucide-react';
+import { FaqAccordion } from './components/FaqAccordion';
+import { CtaForm } from './components/CtaForm';
 
-export const revalidate = 0; // Ensure fresh SSR load
+export const revalidate = 0;
 
 export default async function LandingPage({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
   const params = await searchParams;
   const message = params?.message as string | undefined;
 
-  const clubs = await getCachedClubs();
-  const events = await getCachedEvents();
-
-  // Get next 3 upcoming events for the preview
-  const upcomingEvents = events
-    .filter((e: any) => e.status === 'upcoming')
-    .slice(0, 3);
-
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col relative overflow-hidden">
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans antialiased flex flex-col selection:bg-blue-100 selection:text-blue-700">
       
-      {/* Background gradients */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-[128px] -z-10 pointer-events-none" />
-      <div className="absolute bottom-10 right-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-[128px] -z-10 pointer-events-none" />
-
+      {/* Optional Alert Message */}
       {message && (
-        <div className="bg-emerald-500/10 border-b border-emerald-500/20 text-emerald-400 px-6 py-4 text-sm font-medium z-50 relative flex items-center justify-center">
+        <div className="bg-blue-600 text-white px-6 py-3 text-sm font-medium z-50 relative flex items-center justify-center shadow-md">
           <span className="flex-1 text-center">{message}</span>
-          <Link href="/" className="absolute right-4 p-1.5 hover:bg-emerald-500/20 rounded-full transition-colors" aria-label="Dismiss message">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-            </svg>
+          <Link href="/" className="absolute right-4 p-1 hover:bg-blue-700 rounded-full transition-colors" aria-label="Dismiss message">
+            <X className="w-4 h-4" />
           </Link>
         </div>
       )}
 
-      {/* Header/Navbar */}
-      <header className="sticky top-0 z-50 glass-panel border-b border-white/5 py-4">
-        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-          <Link href="/" className="text-xl font-bold tracking-tight bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
-            CampusClub
+      {/* Header / Navbar */}
+      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200/80 transition-all">
+        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform">
+              <Activity className="w-6 h-6 stroke-[2.5]" />
+            </div>
+            <span className="text-2xl font-bold tracking-tight text-slate-900">
+              Club<span className="text-blue-600">Pulse</span>
+            </span>
           </Link>
-          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
-            <a href="#how-it-works" className="hover:text-white transition">How it works</a>
-            <a href="#clubs" className="hover:text-white transition">Clubs</a>
-            <a href="#about" className="hover:text-white transition">About</a>
+
+          <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
+            <a href="#features" className="hover:text-blue-600 transition-colors">Features</a>
+            <a href="#comparison" className="hover:text-blue-600 transition-colors">Why Us</a>
+            <a href="#how-it-works" className="hover:text-blue-600 transition-colors">How It Works</a>
+            <a href="#faq" className="hover:text-blue-600 transition-colors">FAQ</a>
           </nav>
-          <div className="flex items-center gap-4">
-            <Link href="/login" className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white transition">
+
+          <div className="flex items-center gap-3">
+            <Link 
+              href="/get-started" 
+              className="px-4 py-2.5 text-sm font-semibold text-slate-700 hover:text-blue-600 transition-colors"
+            >
               Sign In
             </Link>
-            <Link href="/signup/student" className="px-4 py-2 text-sm font-medium bg-white text-slate-950 rounded-lg hover:bg-slate-200 transition shadow-lg">
+            <Link 
+              href="/get-started" 
+              className="px-5 py-2.5 text-sm font-semibold bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-all duration-200 shadow-md shadow-blue-600/20 hover:shadow-lg hover:shadow-blue-600/30"
+            >
               Get Started
             </Link>
           </div>
@@ -56,155 +70,468 @@ export default async function LandingPage({ searchParams }: { searchParams: Prom
       </header>
 
       {/* Hero Section */}
-      <section className="max-w-7xl mx-auto px-6 pt-24 pb-20 text-center relative flex flex-col items-center">
-        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20 mb-6">
-          ✨ The Ultimate Event Management Platform
-        </span>
-        <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight max-w-4xl leading-tight bg-gradient-to-b from-white to-slate-400 bg-clip-text text-transparent">
-          Connect, Compete, and Lead Your Campus Life
-        </h1>
-        <p className="mt-6 text-lg md:text-xl text-slate-400 max-w-2xl leading-relaxed">
-          Discover clubs, register for hackathons and sports events, and manage your student organizations with a unified platform.
-        </p>
-        <div className="mt-10 flex flex-wrap justify-center gap-4">
-          <Link href="/signup/student" className="px-8 py-4 font-semibold bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-xl hover:opacity-95 transition shadow-lg shadow-blue-500/10">
-            Register as Student
-          </Link>
-          <Link href="/signup/coordinator" className="px-8 py-4 font-semibold bg-slate-900 border border-white/10 text-white rounded-xl hover:bg-slate-800 transition">
-            Join as Coordinator
-          </Link>
-        </div>
-      </section>
+      <section className="pt-16 pb-20 md:pt-24 md:pb-28 bg-gradient-to-b from-slate-50 via-white to-slate-50 relative overflow-hidden">
+        {/* Soft background light glows */}
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-blue-400/10 blur-[120px] rounded-full pointer-events-none -z-10" />
 
-      {/* How it works */}
-      <section id="how-it-works" className="py-24 border-t border-white/5 bg-slate-950/50">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">How It Works</h2>
-            <p className="mt-4 text-slate-400">Step-by-step guide to get started with CampusClub.</p>
+        <div className="max-w-7xl mx-auto px-6 text-center flex flex-col items-center">
+          
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200/80 text-blue-700 text-xs font-semibold mb-6 shadow-xs animate-pulse">
+            <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+            <span>New: Version 2.0 Released</span>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="glass-card p-8 rounded-2xl">
-              <div className="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center font-bold text-lg border border-blue-500/20 mb-6">
-                1
-              </div>
-              <h3 className="text-xl font-semibold mb-3">Create Profile</h3>
-              <p className="text-slate-400 leading-relaxed text-sm">
-                Sign up as a student to explore clubs, or request coordinator status to host events and manage finances.
-              </p>
-            </div>
-            <div className="glass-card p-8 rounded-2xl">
-              <div className="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center font-bold text-lg border border-blue-500/20 mb-6">
-                2
-              </div>
-              <h3 className="text-xl font-semibold mb-3">Browse & Filter</h3>
-              <p className="text-slate-400 leading-relaxed text-sm">
-                Browse student clubs by category, search by title, and filter events based on online vs offline mode.
-              </p>
-            </div>
-            <div className="glass-card p-8 rounded-2xl">
-              <div className="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center font-bold text-lg border border-blue-500/20 mb-6">
-                3
-              </div>
-              <h3 className="text-xl font-semibold mb-3">Register in Seconds</h3>
-              <p className="text-slate-400 leading-relaxed text-sm">
-                Register instantly via our asynchronous queue, ensuring fast response times even during high-traffic bursts.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
 
-      {/* Clubs & Upcoming Events preview */}
-      <section id="clubs" className="py-24 border-t border-white/5">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-16">
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Active Clubs</h2>
-              <p className="mt-4 text-slate-400">Discover organizations driving the campus culture.</p>
-            </div>
-            <Link href="/login" className="mt-4 md:mt-0 text-blue-400 hover:text-blue-300 font-medium inline-flex items-center gap-1 transition text-sm">
-              View all clubs &rarr;
+          {/* Headline */}
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-slate-900 tracking-tight leading-[1.15] max-w-4xl">
+            Save 10+ Hours a Week with the All-in-One{' '}
+            <span className="text-blue-600 underline decoration-blue-200 decoration-wavy underline-offset-8">
+              Club Management
+            </span>{' '}
+            Platform
+          </h1>
+
+          {/* Subtitle */}
+          <p className="mt-6 text-lg sm:text-xl text-slate-600 max-w-2xl leading-relaxed font-normal">
+            From member tracking to automated billing, ClubPulse gives you the tools to grow your community and reclaim your time.
+          </p>
+
+          {/* CTA Button */}
+          <div className="mt-10 flex items-center justify-center w-full sm:w-auto">
+            <Link 
+              href="/get-started" 
+              className="w-full sm:w-auto px-10 py-4 text-base font-bold bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-200 shadow-xl shadow-blue-600/25 hover:shadow-blue-600/40 hover:-translate-y-0.5"
+            >
+              Get Started
             </Link>
           </div>
 
-          {clubs.length === 0 ? (
-            <div className="text-center py-12 text-slate-500 border border-dashed border-white/10 rounded-2xl">
-              No clubs have been registered yet. Admin will setup the clubs.
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {clubs.slice(0, 6).map((club: any) => (
-                <div key={club.id} className="glass-card p-6 rounded-2xl flex items-center gap-4">
-                  <img src={club.logo_url} alt={club.name} className="w-16 h-16 rounded-xl object-cover bg-slate-900 border border-white/5" />
-                  <div>
-                    <h3 className="font-semibold text-lg">{club.name}</h3>
-                    <p className="text-slate-400 text-sm line-clamp-2 mt-1">{club.description}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       </section>
 
-      {/* Upcoming Events Preview */}
-      <section className="py-24 border-t border-white/5 bg-slate-950/50">
+      {/* Trust Banner / Category Bar */}
+      <section className="py-12 border-y border-slate-200/80 bg-white">
+        <div className="max-w-7xl mx-auto px-6 text-center">
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6">
+            TRUSTED BY 1,200+ SPORTS AND SOCIAL CLUBS NATIONWIDE
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4">
+            {['Sailing', 'Tennis Clubs', 'Country Clubs', 'Fitness Hubs', 'Motorsports'].map((cat, idx) => (
+              <span 
+                key={idx} 
+                className="px-5 py-2.5 rounded-full bg-slate-50 border border-slate-200/80 text-slate-700 text-sm font-semibold shadow-2xs hover:border-blue-300 hover:bg-blue-50/50 hover:text-blue-600 transition-all cursor-default"
+              >
+                {cat}
+              </span>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Features Grid ("Everything You Need to Run Your Club") */}
+      <section id="features" className="py-24 bg-slate-50">
         <div className="max-w-7xl mx-auto px-6">
+          
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Upcoming Events</h2>
-            <p className="mt-4 text-slate-400">Stay updated on hackathons, cultural fests, and workshops.</p>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+              Everything You Need to Run Your Club
+            </h2>
+            <p className="mt-4 text-slate-600 text-base sm:text-lg leading-relaxed">
+              Stop juggling split tools. ClubPulse centralizes your operations so you can focus on what matters most: your members.
+            </p>
           </div>
 
-          {upcomingEvents.length === 0 ? (
-            <div className="text-center py-12 text-slate-500 border border-dashed border-white/10 rounded-2xl">
-              No upcoming events at the moment. Check back soon!
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {upcomingEvents.map((evt: any) => (
-                <div key={evt.id} className="glass-card overflow-hidden rounded-2xl flex flex-col">
-                  {evt.photo_urls?.[0] && (
-                    <img src={evt.photo_urls[0]} alt={evt.title} className="w-full h-48 object-cover border-b border-white/5" />
-                  )}
-                  <div className="p-6 flex-1 flex flex-col">
-                    <span className="text-xs font-semibold text-blue-400 uppercase tracking-wider">
-                      {evt.clubs?.name}
-                    </span>
-                    <h3 className="text-xl font-bold mt-2 mb-3">{evt.title}</h3>
-                    <p className="text-slate-400 text-sm line-clamp-3 mb-6 flex-1">{evt.description}</p>
-                    <div className="flex items-center justify-between text-xs text-slate-500 mt-auto">
-                      <span>📅 {new Date(evt.start_date).toLocaleDateString()}</span>
-                      <span className="font-semibold text-slate-300 bg-white/5 px-2.5 py-1 rounded-full border border-white/5">
-                        🏆 {evt.prize_pool ? `$${evt.prize_pool}` : 'Participation'}
-                      </span>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            
+            {/* Feature 1 */}
+            <div className="bg-white p-8 rounded-3xl border border-slate-200/90 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group">
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <Users className="w-6 h-6 stroke-[2.5]" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900">Member Management & CRM</h3>
+                <p className="mt-3 text-slate-600 text-sm leading-relaxed">
+                  Keep all member data in one place. Manage renewal tracking, digital IDs, and track engagement levels effortlessly.
+                </p>
+              </div>
+
+              {/* Feature Mini UI 1 */}
+              <div className="mt-8 bg-slate-50 rounded-2xl p-4 border border-slate-200/70">
+                <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Recent Members</div>
+                <div className="space-y-2">
+                  <div className="bg-white p-3 rounded-xl border border-slate-200/60 flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center">AM</div>
+                      <div>
+                        <div className="font-bold text-slate-900">Alex Morgan</div>
+                        <div className="text-slate-400">Premium Membership</div>
+                      </div>
                     </div>
+                    <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 font-bold text-[11px]">Active</span>
+                  </div>
+                  <div className="bg-white p-3 rounded-xl border border-slate-200/60 flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center">DC</div>
+                      <div>
+                        <div className="font-bold text-slate-900">David Chen</div>
+                        <div className="text-slate-400">Standard Tier</div>
+                      </div>
+                    </div>
+                    <span className="px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 font-bold text-[11px]">Active</span>
                   </div>
                 </div>
-              ))}
+              </div>
             </div>
-          )}
+
+            {/* Feature 2 */}
+            <div className="bg-white p-8 rounded-3xl border border-slate-200/90 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group">
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <CreditCard className="w-6 h-6 stroke-[2.5]" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900">Automated Billing</h3>
+                <p className="mt-3 text-slate-600 text-sm leading-relaxed">
+                  Set up recurring dues and touchless invoicing. No more chasing overdue payments with manual reminders.
+                </p>
+              </div>
+
+              {/* Feature Mini UI 2 */}
+              <div className="mt-8 bg-slate-50 rounded-2xl p-4 border border-slate-200/70">
+                <div className="bg-white p-4 rounded-xl border border-slate-200/60">
+                  <div className="flex items-center justify-between text-xs text-slate-500">
+                    <span>Pending Member Dues</span>
+                    <span className="font-bold text-slate-900">$49.00 / mo</span>
+                  </div>
+                  <div className="w-full bg-slate-100 h-2 rounded-full mt-3 overflow-hidden">
+                    <div className="bg-blue-600 h-full w-[85%]" />
+                  </div>
+                  <div className="mt-3 flex items-center justify-between text-[11px] text-slate-500 font-medium">
+                    <span className="text-emerald-600 flex items-center gap-1 font-semibold">✓ Auto-debit active</span>
+                    <span>Next cycle: Aug 01</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Feature 3 */}
+            <div className="bg-white p-8 rounded-3xl border border-slate-200/90 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group">
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <Calendar className="w-6 h-6 stroke-[2.5]" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900">Smart Scheduling</h3>
+                <p className="mt-3 text-slate-600 text-sm leading-relaxed">
+                  Easy facility booking and event calendars that members can access and reserve anytime from any device.
+                </p>
+              </div>
+
+              {/* Feature Mini UI 3 */}
+              <div className="mt-8 bg-slate-50 rounded-2xl p-4 border border-slate-200/70">
+                <div className="grid grid-cols-1 gap-2 text-xs">
+                  <div className="bg-white p-3 rounded-xl border border-slate-200/60 flex items-center justify-between">
+                    <div>
+                      <div className="font-bold text-slate-900">Tennis Court #1</div>
+                      <div className="text-slate-400">Court Booking</div>
+                    </div>
+                    <div className="text-emerald-600 font-semibold">Booked • 4:00 PM</div>
+                  </div>
+                  <div className="bg-white p-3 rounded-xl border border-slate-200/60 flex items-center justify-between">
+                    <div>
+                      <div className="font-bold text-slate-900">Main Studio</div>
+                      <div className="text-slate-400">Fitness Room</div>
+                    </div>
+                    <div className="text-blue-600 font-semibold">Available Now</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
         </div>
       </section>
 
-      {/* About */}
-      <section id="about" className="py-24 border-t border-white/5 max-w-7xl mx-auto px-6 text-center">
-        <h2 className="text-3xl font-bold">About CampusClub</h2>
-        <p className="mt-6 text-slate-400 max-w-3xl mx-auto leading-relaxed">
-          CampusClub is a high-performance event platform engineered to handle massive concurrent student registrations. Powered by a decoupled Next.js architecture, Redis-based caching, and BullMQ task queues, it ensures flawless responsiveness and security under peak demand.
-        </p>
+      {/* Comparison Section ("Life Before vs. After ClubPulse") */}
+      <section id="comparison" className="py-24 bg-white border-t border-slate-200/80">
+        <div className="max-w-7xl mx-auto px-6">
+          
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+              Life Before vs. After ClubPulse
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            
+            {/* The Old Way Card */}
+            <div className="bg-slate-50 p-8 md:p-10 rounded-3xl border border-slate-200 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-3 mb-8">
+                  <div className="w-8 h-8 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center">
+                    <X className="w-5 h-5 stroke-[2.5]" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-slate-900">The Old Way</h3>
+                </div>
+
+                <ul className="space-y-5 text-slate-600 text-sm md:text-base">
+                  <li className="flex items-start gap-3">
+                    <X className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
+                    <span>Paper subscriptions and paper forms.</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <X className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
+                    <span>Manual follow-ups on late payments.</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <X className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
+                    <span>Disparate communication (Email, WhatsApp, SMS).</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <X className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
+                    <span>10+ hours of admin work per month.</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            {/* The ClubPulse Way Card */}
+            <div className="bg-blue-600 text-white p-8 md:p-10 rounded-3xl shadow-xl shadow-blue-600/20 flex flex-col justify-between relative overflow-hidden">
+              {/* Subtle background glow */}
+              <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+
+              <div>
+                <div className="flex items-center gap-3 mb-8">
+                  <div className="w-8 h-8 rounded-full bg-white/20 text-white flex items-center justify-center backdrop-blur-xs">
+                    <Zap className="w-5 h-5 stroke-[2.5]" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-white">The ClubPulse Way</h3>
+                </div>
+
+                <ul className="space-y-5 text-blue-50 text-sm md:text-base font-medium">
+                  <li className="flex items-start gap-3">
+                    <Check className="w-5 h-5 text-white shrink-0 mt-0.5 stroke-[3]" />
+                    <span>One unified, automated database.</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Check className="w-5 h-5 text-white shrink-0 mt-0.5 stroke-[3]" />
+                    <span>Touchless billing with zero intervention.</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Check className="w-5 h-5 text-white shrink-0 mt-0.5 stroke-[3]" />
+                    <span>Centralized member dashboard for all interactions.</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Check className="w-5 h-5 text-white shrink-0 mt-0.5 stroke-[3]" />
+                    <span>Happy members and 85% less admin time.</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      {/* 3 Steps to Freedom */}
+      <section id="how-it-works" className="py-24 bg-slate-50 border-t border-slate-200/80">
+        <div className="max-w-7xl mx-auto px-6 text-center">
+          
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-16">
+            Three Steps to Freedom
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative max-w-5xl mx-auto">
+            
+            {/* Connecting line on desktop */}
+            <div className="hidden md:block absolute top-10 left-[16%] right-[16%] h-0.5 bg-slate-200 border-t-2 border-dashed border-slate-300 -z-0" />
+
+            {/* Step 1 */}
+            <div className="relative z-10 flex flex-col items-center">
+              <div className="w-20 h-20 rounded-full bg-white border-2 border-blue-600 text-blue-600 text-2xl font-bold flex items-center justify-center shadow-md mb-6">
+                1
+              </div>
+              <h3 className="text-xl font-bold text-slate-900">Import Members</h3>
+              <p className="mt-3 text-slate-600 text-sm leading-relaxed max-w-xs">
+                Upload your existing list and let us handle the migration for free.
+              </p>
+            </div>
+
+            {/* Step 2 */}
+            <div className="relative z-10 flex flex-col items-center">
+              <div className="w-20 h-20 rounded-full bg-white border-2 border-blue-600 text-blue-600 text-2xl font-bold flex items-center justify-center shadow-md mb-6">
+                2
+              </div>
+              <h3 className="text-xl font-bold text-slate-900">Automate Dues</h3>
+              <p className="mt-3 text-slate-600 text-sm leading-relaxed max-w-xs">
+                Configure your rates and set up the system to collect payments on autopilot.
+              </p>
+            </div>
+
+            {/* Step 3 */}
+            <div className="relative z-10 flex flex-col items-center">
+              <div className="w-20 h-20 rounded-full bg-white border-2 border-blue-600 text-blue-600 text-2xl font-bold flex items-center justify-center shadow-md mb-6">
+                3
+              </div>
+              <h3 className="text-xl font-bold text-slate-900">Launch Your Hub</h3>
+              <p className="mt-3 text-slate-600 text-sm leading-relaxed max-w-xs">
+                Give members access to their digital club dashboard and booking facilities.
+              </p>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="py-24 bg-white border-t border-slate-200/80">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            
+            {/* Review 1 */}
+            <div className="bg-slate-50 p-8 rounded-3xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-1 text-amber-400 mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-5 h-5 fill-amber-400" />
+                  ))}
+                </div>
+                <p className="text-slate-700 text-base md:text-lg leading-relaxed italic">
+                  "ClubPulse has completely transformed how I run my gym. We saw a 30% rise in sign-ups and I finally feel like I'm spending time on my business, not just in it."
+                </p>
+              </div>
+              <div className="mt-8 flex items-center gap-3">
+                <div className="w-11 h-11 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center">
+                  SJ
+                </div>
+                <div>
+                  <div className="font-bold text-slate-900 text-sm">Sarah Jenkins</div>
+                  <div className="text-slate-500 text-xs">Director, Apex Fitness</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Review 2 */}
+            <div className="bg-slate-50 p-8 rounded-3xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-1 text-amber-400 mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-5 h-5 fill-amber-400" />
+                  ))}
+                </div>
+                <p className="text-slate-700 text-base md:text-lg leading-relaxed italic">
+                  "Member retention is at an all-time high. The member dashboard experience makes our members feel like they are part of a truly elite community."
+                </p>
+              </div>
+              <div className="mt-8 flex items-center gap-3">
+                <div className="w-11 h-11 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center">
+                  MT
+                </div>
+                <div>
+                  <div className="font-bold text-slate-900 text-sm">Marcus Thorne</div>
+                  <div className="text-slate-500 text-xs">President, Apex Country Club</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section id="faq" className="py-24 bg-slate-50 border-t border-slate-200/80">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center max-w-3xl mx-auto mb-14">
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+              Frequently Asked Questions
+            </h2>
+          </div>
+          <FaqAccordion />
+        </div>
+      </section>
+
+      {/* Bottom CTA Banner */}
+      <section className="py-12 bg-white border-t border-slate-200/80">
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="bg-blue-600 text-white rounded-3xl p-10 md:p-14 text-center shadow-2xl shadow-blue-600/30 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+            
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight">
+              Ready to transform your club operations?
+            </h2>
+            <p className="mt-3 text-blue-100 text-base md:text-lg mb-8 max-w-2xl mx-auto font-normal">
+              Join 1,200+ successful club owners today. No credit card required.
+            </p>
+
+            <CtaForm />
+          </div>
+        </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-white/5 py-12 mt-auto bg-slate-950/80">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between text-sm text-slate-500 gap-6">
-          <p>&copy; {new Date().getFullYear()} CampusClub. All rights reserved.</p>
-          <div className="flex gap-8">
-            <a href="#" className="hover:text-slate-300">Privacy Policy</a>
-            <a href="#" className="hover:text-slate-300">Terms of Service</a>
+      <footer className="bg-white border-t border-slate-200/80 py-16 text-slate-600">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-10 mb-12">
+            
+            {/* Brand Col */}
+            <div className="md:col-span-2">
+              <Link href="/" className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold">
+                  <Activity className="w-5 h-5 stroke-[2.5]" />
+                </div>
+                <span className="text-xl font-bold tracking-tight text-slate-900">
+                  Club<span className="text-blue-600">Pulse</span>
+                </span>
+              </Link>
+              <p className="mt-4 text-sm text-slate-500 leading-relaxed max-w-sm">
+                The complete platform for your club's administration, member experience, and touchless billing.
+              </p>
+            </div>
+
+            {/* Col 1 */}
+            <div>
+              <div className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-4">PRODUCT</div>
+              <ul className="space-y-2.5 text-sm">
+                <li><a href="#features" className="hover:text-blue-600 transition-colors">Features</a></li>
+                <li><a href="#comparison" className="hover:text-blue-600 transition-colors">Why Us</a></li>
+                <li><a href="#how-it-works" className="hover:text-blue-600 transition-colors">How It Works</a></li>
+              </ul>
+            </div>
+
+            {/* Col 2 */}
+            <div>
+              <div className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-4">COMPANY</div>
+              <ul className="space-y-2.5 text-sm">
+                <li><a href="#" className="hover:text-blue-600 transition-colors">About</a></li>
+                <li><a href="#" className="hover:text-blue-600 transition-colors">Customers</a></li>
+                <li><a href="#" className="hover:text-blue-600 transition-colors">Contact</a></li>
+              </ul>
+            </div>
+
+            {/* Col 3 */}
+            <div>
+              <div className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-4">LEGAL</div>
+              <ul className="space-y-2.5 text-sm">
+                <li><a href="#" className="hover:text-blue-600 transition-colors">Privacy</a></li>
+                <li><a href="#" className="hover:text-blue-600 transition-colors">Terms</a></li>
+              </ul>
+            </div>
+
           </div>
+
+          <div className="pt-8 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-4">
+            <p>&copy; 2026 ClubPulse. All rights reserved.</p>
+            <div className="flex items-center gap-6">
+              <a href="#" className="hover:text-slate-600 transition-colors">Twitter</a>
+              <a href="#" className="hover:text-slate-600 transition-colors">GitHub</a>
+              <a href="#" className="hover:text-slate-600 transition-colors">LinkedIn</a>
+            </div>
+          </div>
+
         </div>
       </footer>
+
     </div>
   );
 }

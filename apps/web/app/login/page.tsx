@@ -1,7 +1,6 @@
-'use server';
-
 import Link from 'next/link';
-import { loginAction } from '../actions/auth';
+import { Activity } from 'lucide-react';
+import { LoginForm } from '../components/LoginForm';
 
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -18,102 +17,77 @@ export default async function LoginPage({ searchParams }: PageProps) {
   if (message === 'pending_approval') {
     feedbackMessage = 'Your coordinator account is pending approval by the administrator. Please check back later.';
     feedbackType = 'warning';
+  } else if (message) {
+    feedbackMessage = message;
+    feedbackType = 'info';
   } else if (error) {
     feedbackMessage = error;
     feedbackType = 'error';
   }
 
-  // Create a handler for client submission in the server component.
-  // We can write a server-side wrapper or render a clean form that submits to a Server Action.
-  const handleLogin = async (formData: FormData) => {
-    'use server';
-    const result = await loginAction(formData);
-    if (result?.error) {
-      if (result.error === 'pending_approval') {
-        return { error: 'Your account is pending approval by an admin.' };
-      }
-      return { error: result.error };
-    }
-  };
+  const roleParam = params.role as string | undefined;
+  const defaultRole = roleParam === 'coordinator' ? 'coordinator' : 'student';
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center px-6 relative overflow-hidden">
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans antialiased flex flex-col justify-between relative selection:bg-blue-100 selection:text-blue-700 overflow-x-hidden">
       
-      {/* Glow effects */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[128px] -z-10 pointer-events-none" />
+      {/* Background Micro Dot Grid Pattern */}
+      <div 
+        className="absolute inset-0 opacity-[0.4] pointer-events-none -z-0"
+        style={{
+          backgroundImage: `radial-gradient(#94a3b8 0.75px, transparent 0.75px)`,
+          backgroundSize: '24px 24px'
+        }}
+      />
 
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <Link href="/" className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
-            CampusClub
+      {/* Navbar */}
+      <header className="w-full border-b border-slate-200/80 bg-white/80 backdrop-blur-md sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-6 md:px-12 py-4 flex items-center justify-center">
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-sm shadow-blue-500/30 group-hover:bg-blue-700 transition-colors">
+              <Activity className="w-4 h-4 stroke-[2.5]" />
+            </div>
+            <span className="text-lg font-extrabold text-slate-900 tracking-tight group-hover:text-blue-600 transition-colors">
+              Club<span className="text-blue-600">Pulse</span>
+            </span>
           </Link>
-          <h2 className="text-xl font-bold mt-4">Welcome Back</h2>
-          <p className="text-slate-400 text-sm mt-2">Sign in to access your portal</p>
         </div>
+      </header>
 
-        <div className="glass-panel p-8 rounded-3xl shadow-xl border border-white/10">
-          {feedbackMessage && (
-            <div className={`p-4 rounded-xl text-sm mb-6 ${
-              feedbackType === 'warning' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 
-              feedbackType === 'error' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
-              'bg-blue-500/10 text-blue-400 border border-blue-500/20'
-            }`}>
-              {feedbackMessage}
+      {/* Main Container */}
+      <main className="flex-1 flex items-center justify-center px-4 py-12 md:py-16">
+        <LoginForm feedbackMessage={feedbackMessage} feedbackType={feedbackType} defaultRole={defaultRole} />
+      </main>
+
+      {/* Footer Bar */}
+      <footer className="w-full bg-blue-50/70 border-t border-slate-200/80 py-4 px-6 md:px-12 relative z-10">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between text-xs text-slate-600 gap-4">
+          
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2 group">
+            <div className="w-6 h-6 rounded-md bg-blue-600 flex items-center justify-center text-white font-bold">
+              <Activity className="w-4 h-4 stroke-[2.5]" />
             </div>
-          )}
+            <span className="font-bold text-slate-900 text-sm tracking-tight">
+              Club<span className="text-blue-600">Pulse</span>
+            </span>
+          </Link>
 
-          {/* Simple form calling server action directly */}
-          <form action={loginAction as any} className="space-y-5">
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
-                Email Address
-              </label>
-              <input
-                type="email"
-                name="email"
-                required
-                className="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 transition text-slate-100 placeholder:text-slate-600"
-                placeholder="you@university.edu"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
-                Password
-              </label>
-              <input
-                type="password"
-                name="password"
-                required
-                className="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 transition text-slate-100 placeholder:text-slate-600"
-                placeholder="••••••••"
-              />
-            </div>
-
-            <button
-              type="submit"
-              className="w-full py-3.5 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl font-semibold text-sm hover:opacity-95 transition shadow-lg shadow-blue-500/10"
-            >
-              Sign In
-            </button>
-          </form>
-
-          <div className="mt-8 pt-6 border-t border-white/5 space-y-4 text-center text-xs text-slate-400">
-            <p>
-              New student?{' '}
-              <Link href="/signup/student" className="text-blue-400 hover:underline">
-                Create student profile
-              </Link>
-            </p>
-            <p>
-              Applying as coordinator?{' '}
-              <Link href="/signup/coordinator" className="text-indigo-400 hover:underline">
-                Submit coordinator request
-              </Link>
-            </p>
+          {/* Links */}
+          <div className="flex items-center gap-6 font-medium text-slate-600">
+            <a href="#" className="hover:text-blue-600 transition-colors">Privacy Policy</a>
+            <a href="#" className="hover:text-blue-600 transition-colors">Terms of Service</a>
+            <a href="#" className="hover:text-blue-600 transition-colors">Contact Support</a>
           </div>
+
+          {/* Copyright */}
+          <div className="text-slate-500 font-medium">
+            &copy; {new Date().getFullYear()} ClubPulse Inc. All rights reserved.
+          </div>
+
         </div>
-      </div>
+      </footer>
+
     </div>
   );
 }

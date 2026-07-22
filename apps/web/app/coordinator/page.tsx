@@ -46,8 +46,8 @@ export default async function CoordinatorDashboard() {
 
   // Identify the coordinator's club events to fetch registrations
   const myClubEventIds = allEvents
-    .filter(e => e.club_id === coord.club_id)
-    .map(e => e.id);
+    .filter((e: any) => e.club_id === coord.club_id)
+    .map((e: any) => e.id);
 
   let clubRegistrations: any[] = [];
   if (myClubEventIds.length > 0) {

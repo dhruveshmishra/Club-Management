@@ -59,6 +59,7 @@ export function LoginForm({ feedbackMessage, feedbackType, defaultRole = 'studen
 
         {/* Form submitting to server action */}
         <form action={loginAction as any} className="space-y-5">
+          <input type="hidden" name="role" value={defaultRole} />
           {/* Email Address */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">

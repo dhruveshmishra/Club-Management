@@ -6,7 +6,9 @@ import { revalidatePath } from 'next/cache';
 
 // Helper to check if coordinator has management permissions
 async function getApprovedCoordinator(supabase: any, userId: string, allowedOccupations?: string[]) {
-  const { data: coord, error } = await supabase
+  const { createServiceClient } = await import('../../lib/supabase');
+  const serviceClient = createServiceClient();
+  const { data: coord, error } = await serviceClient
     .from('coordinator_profiles')
     .select('*')
     .eq('user_id', userId)
@@ -25,7 +27,12 @@ async function getApprovedCoordinator(supabase: any, userId: string, allowedOccu
 
 export async function createEventAction(formData: FormData) {
   const title = formData.get('title') as string;
-  const description = formData.get('description') as string;
+  let description = formData.get('description') as string;
+  const registrationFee = formData.get('registrationFee') as string;
+  
+  if (registrationFee) {
+    description += `\n\nRegistration Fee: $${registrationFee}`;
+  }
   const prizePool = parseFloat(formData.get('prizePool') as string || '0');
   const teamSize = parseInt(formData.get('teamSize') as string || '1', 10);
   const mode = formData.get('mode') as 'online' | 'offline';
@@ -41,10 +48,13 @@ export async function createEventAction(formData: FormData) {
   if (!user) return { error: 'Unauthorized' };
 
   try {
-    // Check permission (president, vice_president, treasurer only)
-    const coord = await getApprovedCoordinator(supabase, user.id, ['president', 'vice_president', 'treasurer']);
+    // Check permission (president, vice_president only)
+    const coord = await getApprovedCoordinator(supabase, user.id, ['president', 'vice_president']);
 
-    const { data: event, error: eventError } = await supabase
+    const { createServiceClient } = await import('../../lib/supabase');
+    const serviceClient = createServiceClient();
+
+    const { data: event, error: eventError } = await serviceClient
       .from('events')
       .insert({
         club_id: coord.club_id,
@@ -98,9 +108,12 @@ export async function updateEventAction(eventId: string, formData: FormData) {
   if (!user) return { error: 'Unauthorized' };
 
   try {
-    const coord = await getApprovedCoordinator(supabase, user.id, ['president', 'vice_president', 'treasurer']);
+    const coord = await getApprovedCoordinator(supabase, user.id, ['president', 'vice_president']);
 
-    const { error: eventError } = await supabase
+    const { createServiceClient } = await import('../../lib/supabase');
+    const serviceClient = createServiceClient();
+
+    const { error: eventError } = await serviceClient
       .from('events')
       .update({
         title,
@@ -142,9 +155,12 @@ export async function deleteEventAction(eventId: string) {
   if (!user) return { error: 'Unauthorized' };
 
   try {
-    const coord = await getApprovedCoordinator(supabase, user.id, ['president', 'vice_president', 'treasurer']);
+    const coord = await getApprovedCoordinator(supabase, user.id, ['president', 'vice_president']);
 
-    const { error: eventError } = await supabase
+    const { createServiceClient } = await import('../../lib/supabase');
+    const serviceClient = createServiceClient();
+
+    const { error: eventError } = await serviceClient
       .from('events')
       .delete()
       .eq('id', eventId)
@@ -186,7 +202,10 @@ export async function createTransactionAction(formData: FormData) {
     // Only approved coordinators with occupation = treasurer can manage finances
     const coord = await getApprovedCoordinator(supabase, user.id, ['treasurer']);
 
-    const { error: txError } = await supabase
+    const { createServiceClient } = await import('../../lib/supabase');
+    const serviceClient = createServiceClient();
+
+    const { error: txError } = await serviceClient
       .from('transactions')
       .insert({
         club_id: coord.club_id,

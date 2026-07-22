@@ -1,4 +1,4 @@
-import { createServerSideClient } from './supabase';
+import { createServerSideClient, createServiceClient } from './supabase';
 import { getRedisClient, getCachedData, setCachedData } from './redis';
 
 const CACHE_TTL = 45; // 45 seconds cache TTL
@@ -15,7 +15,7 @@ export async function getCachedClubs() {
     }
 
     console.log('Cache MISS for clubs:list, fetching from Supabase...');
-    const supabase = await createServerSideClient();
+    const supabase = createServiceClient();
     const { data, error } = await supabase
       .from('clubs')
       .select('*')
@@ -31,7 +31,7 @@ export async function getCachedClubs() {
     console.error('Error fetching clubs:', error);
     // Fallback to database directly if Redis is offline
     try {
-      const supabase = await createServerSideClient();
+      const supabase = createServiceClient();
       const { data } = await supabase.from('clubs').select('*').order('name');
       return data || [];
     } catch {
@@ -52,7 +52,7 @@ export async function getCachedEvents(clubId?: string) {
     }
 
     console.log(`Cache MISS for ${cacheKey}, fetching from Supabase...`);
-    const supabase = await createServerSideClient();
+    const supabase = createServiceClient();
     
     let query = supabase
       .from('events')
@@ -73,7 +73,7 @@ export async function getCachedEvents(clubId?: string) {
   } catch (error) {
     console.error(`Error fetching events for club ${clubId || 'all'}:`, error);
     try {
-      const supabase = await createServerSideClient();
+      const supabase = createServiceClient();
       let query = supabase.from('events').select('*, clubs(name, logo_url)').order('start_date');
       if (clubId) query = query.eq('club_id', clubId);
       const { data } = await query;

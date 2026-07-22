@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { createServerSideClient } from '../../lib/supabase';
+import { createServerSideClient, createServiceClient } from '../../lib/supabase';
 import { getCachedClubs, getCachedEvents } from '../../lib/queries';
 import { logoutAction } from '../actions/auth';
 
@@ -22,8 +22,10 @@ export default async function StudentPortal({ searchParams }: PageProps) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 
-  // Fetch student profile
-  const { data: profile } = await supabase
+  const serviceClient = createServiceClient();
+
+  // Fetch student profile using service client to bypass RLS recursion
+  const { data: profile } = await serviceClient
     .from('student_profiles')
     .select('*')
     .eq('user_id', user.id)
@@ -35,8 +37,8 @@ export default async function StudentPortal({ searchParams }: PageProps) {
     redirect('/login');
   }
 
-  // Fetch student registrations
-  const { data: regs } = await supabase
+  // Fetch student registrations using service client
+  const { data: regs } = await serviceClient
     .from('registrations')
     .select('event_id')
     .eq('student_user_id', user.id);

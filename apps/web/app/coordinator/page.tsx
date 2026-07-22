@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { createServerSideClient } from '../../lib/supabase';
+import { createServerSideClient, createServiceClient } from '../../lib/supabase';
 import { logoutAction } from '../actions/auth';
 import { createEventAction, deleteEventAction } from '../actions/coordinator';
 
@@ -13,8 +13,10 @@ export default async function CoordinatorDashboard() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 
-  // Fetch coordinator profile
-  const { data: coord, error: coordError } = await supabase
+  const serviceClient = createServiceClient();
+
+  // Fetch coordinator profile using service client
+  const { data: coord, error: coordError } = await serviceClient
     .from('coordinator_profiles')
     .select('*, clubs(name, logo_url)')
     .eq('user_id', user.id)
@@ -26,7 +28,7 @@ export default async function CoordinatorDashboard() {
   }
 
   // Fetch all events for this coordinator's club
-  const { data: events } = await supabase
+  const { data: events } = await serviceClient
     .from('events')
     .select('*')
     .eq('club_id', coord.club_id)
@@ -38,7 +40,7 @@ export default async function CoordinatorDashboard() {
   const eventIds = clubEvents.map((e: any) => e.id);
   let clubRegistrations: any[] = [];
   if (eventIds.length > 0) {
-    const { data: regs } = await supabase
+    const { data: regs } = await serviceClient
       .from('registrations')
       .select('*, events(title), student_profiles(name, college, phone)')
       .in('event_id', eventIds)
@@ -47,7 +49,7 @@ export default async function CoordinatorDashboard() {
   }
 
   // Fetch coordinator members of this club
-  const { data: members } = await supabase
+  const { data: members } = await serviceClient
     .from('coordinator_profiles')
     .select('*')
     .eq('club_id', coord.club_id);

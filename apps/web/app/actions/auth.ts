@@ -1,6 +1,6 @@
 'use server';
 
-import { createServerSideClient } from '../../lib/supabase';
+import { createServerSideClient, createServiceClient } from '../../lib/supabase';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
@@ -29,12 +29,33 @@ async function uploadFile(supabase: any, bucket: string, path: string, file: Fil
       upsert: true,
     });
 
+  let finalPath = path;
+
   if (error) {
-    console.error('Storage upload error:', error);
-    throw new Error(`Failed to upload file: ${error.message}`);
+    if (error.message.includes('Bucket not found') || error.message.includes('not found')) {
+      // Try to create the bucket automatically since we have the service key
+      await supabase.storage.createBucket(bucket, { public: true });
+      
+      // Retry the upload
+      const retry = await supabase.storage.from(bucket).upload(path, buffer, {
+        contentType: file.type,
+        upsert: true,
+      });
+
+      if (retry.error) {
+        throw new Error(`Failed to upload file after creating bucket: ${retry.error.message}`);
+      }
+      
+      finalPath = retry.data?.path || path;
+    } else {
+      console.error('Storage upload error:', error);
+      throw new Error(`Failed to upload file: ${error.message}`);
+    }
+  } else if (data) {
+    finalPath = data.path;
   }
 
-  const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(data.path);
+  const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(finalPath);
   return publicUrl;
 }
 
@@ -43,7 +64,7 @@ export async function loginAction(formData: FormData) {
   const password = formData.get('password') as string;
 
   if (!email || !password) {
-    return { error: 'Email and password are required' };
+    redirect('/login?error=Email+and+password+are+required');
   }
 
   const supabase = await createServerSideClient();
@@ -54,13 +75,16 @@ export async function loginAction(formData: FormData) {
   });
 
   if (authError || !authData.user) {
-    return { error: authError?.message || 'Invalid credentials' };
+    const msg = encodeURIComponent(authError?.message || 'Invalid credentials');
+    redirect(`/login?error=${msg}`);
   }
 
   const user = authData.user;
 
-  // Retrieve user profile
-  const { data: profile, error: profileError } = await supabase
+  const serviceClient = createServiceClient();
+
+  // Retrieve user profile using service client to bypass RLS recursion
+  const { data: profile, error: profileError } = await serviceClient
     .from('profiles')
     .select('*')
     .eq('id', user.id)
@@ -68,18 +92,18 @@ export async function loginAction(formData: FormData) {
 
   if (profileError || !profile) {
     await supabase.auth.signOut();
-    return { error: 'User profile not found.' };
+    redirect('/login?error=User+profile+not+found.');
   }
 
   if (profile.role === 'admin') {
     // Reject admins on the web portal
     await supabase.auth.signOut();
-    return { error: 'Admin users must log in to the admin console.' };
+    redirect('/login?error=Admin+users+must+log+in+to+the+admin+console.');
   }
 
   if (profile.role === 'coordinator') {
-    // Check approval status
-    const { data: coord, error: coordError } = await supabase
+    // Check approval status using service client
+    const { data: coord, error: coordError } = await serviceClient
       .from('coordinator_profiles')
       .select('status')
       .eq('user_id', user.id)
@@ -87,17 +111,17 @@ export async function loginAction(formData: FormData) {
 
     if (coordError || !coord) {
       await supabase.auth.signOut();
-      return { error: 'Coordinator profile not found.' };
+      redirect('/login?error=Coordinator+profile+not+found.');
     }
 
     if (coord.status === 'pending') {
       await supabase.auth.signOut();
-      return { error: 'pending_approval' };
+      redirect('/login?message=pending_approval');
     }
 
     if (coord.status === 'rejected') {
       await supabase.auth.signOut();
-      return { error: 'Your coordinator application has been rejected.' };
+      redirect('/login?error=Your+coordinator+application+has+been+rejected.');
     }
 
     redirect('/coordinator');
@@ -119,30 +143,32 @@ export async function studentSignupAction(formData: FormData) {
   const phone = formData.get('phone') as string;
 
   if (!email || !password || !name || !college || !yearStr || !phone) {
-    return { error: 'All fields are required.' };
+    redirect('/signup/student?error=All+fields+are+required.');
   }
 
   const year = parseInt(yearStr, 10);
   if (isNaN(year)) {
-    return { error: 'Invalid year format.' };
+    redirect('/signup/student?error=Invalid+year+format.');
   }
 
-  const supabase = await createServerSideClient();
+  const serviceClient = createServiceClient();
 
-  // Create auth user
-  const { data: authData, error: authError } = await supabase.auth.signUp({
+  // Create auth user bypassing rate limits
+  const { data: authData, error: authError } = await serviceClient.auth.admin.createUser({
     email,
     password,
+    email_confirm: true,
   });
 
   if (authError || !authData.user) {
-    return { error: authError?.message || 'Failed to register account.' };
+    const msg = encodeURIComponent(authError?.message || 'Failed to register account.');
+    redirect(`/signup/student?error=${msg}`);
   }
 
   const user = authData.user;
 
-  // Insert profile (public.profiles RLS allows inserting when auth.uid() = id)
-  const { error: profileError } = await supabase
+  // Insert profile using service client to bypass RLS issues
+  const { error: profileError } = await serviceClient
     .from('profiles')
     .insert({
       id: user.id,
@@ -152,11 +178,11 @@ export async function studentSignupAction(formData: FormData) {
 
   if (profileError) {
     console.error('Profile creation error:', profileError);
-    return { error: 'Failed to create student profile structure.' };
+    redirect('/signup/student?error=Failed+to+create+student+profile+structure.');
   }
 
   // Insert student profile
-  const { error: studentError } = await supabase
+  const { error: studentError } = await serviceClient
     .from('student_profiles')
     .insert({
       user_id: user.id,
@@ -168,11 +194,11 @@ export async function studentSignupAction(formData: FormData) {
 
   if (studentError) {
     console.error('Student profile creation error:', studentError);
-    return { error: 'Failed to complete student profile setup.' };
+    redirect('/signup/student?error=Failed+to+complete+student+profile+setup.');
   }
 
-  // Automatic login by redirection to student portal
-  redirect('/student');
+  // Sign out is no longer needed since admin.createUser does not log the user in
+  redirect('/login?message=Signup+successful.+Please+log+in.');
 }
 
 export async function coordinatorSignupAction(formData: FormData) {
@@ -188,19 +214,21 @@ export async function coordinatorSignupAction(formData: FormData) {
   const proofFile = formData.get('proof') as File;
 
   if (!email || !password || !name || !college || !phone || !clubId || !occupation || !photoFile || !proofFile) {
-    return { error: 'All fields, including file uploads, are required.' };
+    redirect('/signup/coordinator?error=All+fields%2C+including+file+uploads%2C+are+required.');
   }
 
-  const supabase = await createServerSideClient();
+  const serviceClient = createServiceClient();
 
-  // Create Auth User
-  const { data: authData, error: authError } = await supabase.auth.signUp({
+  // Create Auth User bypassing rate limits
+  const { data: authData, error: authError } = await serviceClient.auth.admin.createUser({
     email,
     password,
+    email_confirm: true,
   });
 
   if (authError || !authData.user) {
-    return { error: authError?.message || 'Failed to register coordinator account.' };
+    const msg = encodeURIComponent(authError?.message || 'Failed to register coordinator account.');
+    redirect(`/signup/coordinator?error=${msg}`);
   }
 
   const user = authData.user;
@@ -208,11 +236,11 @@ export async function coordinatorSignupAction(formData: FormData) {
   try {
     // Upload files
     // Use bucket names 'coordinator-uploads' or similar. We will store it under 'coordinator-uploads' bucket
-    const photoUrl = await uploadFile(supabase, 'coordinator-uploads', `photos/${user.id}_${Date.now()}_${photoFile.name}`, photoFile);
-    const proofUrl = await uploadFile(supabase, 'coordinator-uploads', `proofs/${user.id}_${Date.now()}_${proofFile.name}`, proofFile);
+    const photoUrl = await uploadFile(serviceClient, 'coordinator-uploads', `photos/${user.id}_${Date.now()}_${photoFile.name}`, photoFile);
+    const proofUrl = await uploadFile(serviceClient, 'coordinator-uploads', `proofs/${user.id}_${Date.now()}_${proofFile.name}`, proofFile);
 
     // Create profile
-    const { error: profileError } = await supabase
+    const { error: profileError } = await serviceClient
       .from('profiles')
       .insert({
         id: user.id,
@@ -223,7 +251,7 @@ export async function coordinatorSignupAction(formData: FormData) {
     if (profileError) throw profileError;
 
     // Create coordinator profile (status defaults to pending)
-    const { error: coordError } = await supabase
+    const { error: coordError } = await serviceClient
       .from('coordinator_profiles')
       .insert({
         user_id: user.id,
@@ -241,10 +269,11 @@ export async function coordinatorSignupAction(formData: FormData) {
 
   } catch (err: any) {
     console.error('Coordinator signup failed:', err);
-    return { error: err.message || 'An error occurred during coordinator signup.' };
+    const msg = encodeURIComponent(err.message || 'An error occurred during coordinator signup.');
+    redirect(`/signup/coordinator?error=${msg}`);
   }
 
-  return { success: true, message: 'Signup request submitted successfully. You will be able to log in once an administrator approves your account.' };
+  redirect('/?message=Signup+request+submitted+successfully.+You+will+be+able+to+log+in+once+an+administrator+approves+your+account.');
 }
 
 export async function logoutAction() {

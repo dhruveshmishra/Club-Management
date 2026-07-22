@@ -10,6 +10,7 @@ interface PageProps {
 export default async function LoginPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const message = params.message as string | undefined;
+  const error = params.error as string | undefined;
 
   let feedbackMessage = '';
   let feedbackType = 'info';
@@ -17,6 +18,9 @@ export default async function LoginPage({ searchParams }: PageProps) {
   if (message === 'pending_approval') {
     feedbackMessage = 'Your coordinator account is pending approval by the administrator. Please check back later.';
     feedbackType = 'warning';
+  } else if (error) {
+    feedbackMessage = error;
+    feedbackType = 'error';
   }
 
   // Create a handler for client submission in the server component.
@@ -50,7 +54,9 @@ export default async function LoginPage({ searchParams }: PageProps) {
         <div className="glass-panel p-8 rounded-3xl shadow-xl border border-white/10">
           {feedbackMessage && (
             <div className={`p-4 rounded-xl text-sm mb-6 ${
-              feedbackType === 'warning' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+              feedbackType === 'warning' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 
+              feedbackType === 'error' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
+              'bg-blue-500/10 text-blue-400 border border-blue-500/20'
             }`}>
               {feedbackMessage}
             </div>

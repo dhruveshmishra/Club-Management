@@ -197,8 +197,19 @@ export async function studentSignupAction(formData: FormData) {
     redirect('/signup/student?error=Failed+to+complete+student+profile+setup.');
   }
 
-  // Sign out is no longer needed since admin.createUser does not log the user in
-  redirect('/login?message=Signup+successful.+Please+log+in.');
+  // Auto-login the student after successful signup
+  const supabase = await createServerSideClient();
+  const { error: signInError } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (signInError) {
+    // Fallback if auto-login fails for some reason
+    redirect('/login?message=Signup+successful.+Please+log+in.');
+  }
+
+  redirect('/student');
 }
 
 export async function coordinatorSignupAction(formData: FormData) {

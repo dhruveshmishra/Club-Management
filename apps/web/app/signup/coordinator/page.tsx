@@ -132,6 +132,20 @@ export default async function CoordinatorSignupPage({ searchParams }: { searchPa
                 />
               </div>
 
+              {/* College */}
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
+                  College Name
+                </label>
+                <input
+                  type="text"
+                  name="college"
+                  required
+                  className="w-full bg-slate-50/70 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all"
+                  placeholder="University School of Engineering"
+                />
+              </div>
+
               {/* Club + Role */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>

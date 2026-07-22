@@ -155,6 +155,17 @@ export async function studentSignupAction(formData: FormData) {
 
   const serviceClient = createServiceClient();
 
+  // Check if email already exists
+  const { data: existingProfile } = await serviceClient
+    .from('profiles')
+    .select('id')
+    .eq('email', email)
+    .maybeSingle();
+
+  if (existingProfile) {
+    redirect('/signup/student?error=An+account+with+this+email+already+exists.');
+  }
+
   // Create auth user bypassing rate limits
   const { data: authData, error: authError } = await serviceClient.auth.admin.createUser({
     email,
@@ -231,6 +242,17 @@ export async function coordinatorSignupAction(formData: FormData) {
   }
 
   const serviceClient = createServiceClient();
+
+  // Check if email already exists
+  const { data: existingProfile } = await serviceClient
+    .from('profiles')
+    .select('id')
+    .eq('email', email)
+    .maybeSingle();
+
+  if (existingProfile) {
+    redirect('/signup/coordinator?error=An+account+with+this+email+already+exists.');
+  }
 
   // Create Auth User bypassing rate limits
   const { data: authData, error: authError } = await serviceClient.auth.admin.createUser({

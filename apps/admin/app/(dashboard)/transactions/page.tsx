@@ -21,12 +21,18 @@ export default async function FinancialOversightPage() {
 
   return (
     <div className="space-y-10 w-full">
+      {/* Header */}
       <div>
-        <h1 className="text-3xl font-extrabold tracking-tight">Financial Oversight</h1>
-        <p className="text-slate-400 text-sm mt-1">Consolidated transaction ledger across all university clubs.</p>
+        <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
+          Financial{' '}
+          <span className="text-blue-600 underline decoration-blue-200 decoration-wavy underline-offset-8">
+            Oversight
+          </span>
+        </h1>
+        <p className="text-slate-500 text-sm mt-2">Consolidated transaction ledger across all university clubs.</p>
       </div>
 
-      <div className="glass-panel rounded-2xl border border-white/5 overflow-hidden">
+      <div className="glass-panel rounded-2xl overflow-hidden">
         {txList.length === 0 ? (
           <div className="text-center py-16 text-slate-500 text-sm">
             No transactions posted yet.
@@ -35,7 +41,7 @@ export default async function FinancialOversightPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="border-b border-white/5 bg-white/2 text-slate-400 font-bold uppercase tracking-wider">
+                <tr className="border-b border-slate-100 bg-slate-50/50 text-slate-500 font-bold uppercase tracking-wider">
                   <th className="p-4">Club</th>
                   <th className="p-4">Description</th>
                   <th className="p-4">Author</th>
@@ -44,27 +50,27 @@ export default async function FinancialOversightPage() {
                   <th className="p-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-slate-100">
                 {txList.map((tx: any) => (
-                  <tr key={tx.id} className="hover:bg-white/2 transition">
-                    <td className="p-4 font-semibold text-slate-200">
+                  <tr key={tx.id} className="hover:bg-slate-50/50 transition">
+                    <td className="p-4 font-semibold text-slate-800">
                       {tx.clubs?.name}
                     </td>
-                    <td className="p-4 text-slate-300">
+                    <td className="p-4 text-slate-700">
                       {tx.description}
                     </td>
-                    <td className="p-4 text-slate-400">
+                    <td className="p-4 text-slate-600">
                       {tx.coordinator_profiles?.name}
                     </td>
                     <td className="p-4 text-slate-500">
                       {new Date(tx.date).toLocaleDateString()}
                     </td>
-                    <td className={`p-4 font-bold ${tx.type === 'income' ? 'text-emerald-400' : 'text-red-400'}`}>
+                    <td className={`p-4 font-bold ${tx.type === 'income' ? 'text-emerald-600' : 'text-red-600'}`}>
                       {tx.type === 'income' ? '+' : '-'}${tx.amount.toFixed(2)}
                     </td>
                     <td className="p-4 text-right">
                       <form action={handleDelete.bind(null, tx.id)}>
-                        <button type="submit" className="px-3 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-lg text-[10px] font-semibold transition">
+                        <button type="submit" className="px-3 py-1 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-lg text-[10px] font-semibold transition">
                           Delete
                         </button>
                       </form>

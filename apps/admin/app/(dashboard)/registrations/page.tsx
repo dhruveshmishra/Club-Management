@@ -21,12 +21,18 @@ export default async function RegistrationsOversightPage() {
 
   return (
     <div className="space-y-10 w-full">
+      {/* Header */}
       <div>
-        <h1 className="text-3xl font-extrabold tracking-tight">Registration Oversight</h1>
-        <p className="text-slate-400 text-sm mt-1">Audit and remove registrations across all events and clubs.</p>
+        <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
+          Registration{' '}
+          <span className="text-blue-600 underline decoration-blue-200 decoration-wavy underline-offset-8">
+            Oversight
+          </span>
+        </h1>
+        <p className="text-slate-500 text-sm mt-2">Audit and remove registrations across all events and clubs.</p>
       </div>
 
-      <div className="glass-panel rounded-2xl border border-white/5 overflow-hidden">
+      <div className="glass-panel rounded-2xl overflow-hidden">
         {regList.length === 0 ? (
           <div className="text-center py-16 text-slate-500 text-sm">
             No registrations exist on the platform.
@@ -35,7 +41,7 @@ export default async function RegistrationsOversightPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="border-b border-white/5 bg-white/2 text-slate-400 font-bold uppercase tracking-wider">
+                <tr className="border-b border-slate-100 bg-slate-50/50 text-slate-500 font-bold uppercase tracking-wider">
                   <th className="p-4">Student</th>
                   <th className="p-4">Event</th>
                   <th className="p-4">Club</th>
@@ -43,17 +49,17 @@ export default async function RegistrationsOversightPage() {
                   <th className="p-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-slate-100">
                 {regList.map((reg: any) => (
-                  <tr key={reg.id} className="hover:bg-white/2 transition">
+                  <tr key={reg.id} className="hover:bg-slate-50/50 transition">
                     <td className="p-4">
-                      <div className="font-semibold text-slate-200">{reg.student_profiles?.name}</div>
-                      <div className="text-[10px] text-slate-500">{reg.student_profiles?.college}</div>
+                      <div className="font-semibold text-slate-800">{reg.student_profiles?.name}</div>
+                      <div className="text-[10px] text-slate-400 font-medium">{reg.student_profiles?.college}</div>
                     </td>
-                    <td className="p-4 font-medium text-slate-300">
+                    <td className="p-4 font-semibold text-slate-700">
                       {reg.events?.title}
                     </td>
-                    <td className="p-4 text-slate-400">
+                    <td className="p-4 text-slate-600">
                       {reg.events?.clubs?.name}
                     </td>
                     <td className="p-4 text-slate-500">
@@ -61,7 +67,7 @@ export default async function RegistrationsOversightPage() {
                     </td>
                     <td className="p-4 text-right">
                       <form action={handleDelete.bind(null, reg.id)}>
-                        <button type="submit" className="px-3 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-lg text-[10px] font-semibold transition">
+                        <button type="submit" className="px-3 py-1 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-lg text-[10px] font-semibold transition">
                           Remove
                         </button>
                       </form>

@@ -95,34 +95,37 @@ export default async function TaggedStudentsPage({ searchParams }: PageProps) {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="space-y-1">
-          <div className="flex items-center gap-2 text-xs text-slate-500 font-semibold uppercase tracking-wider">
-            <Link href="/users" className="hover:text-indigo-400 transition">User Management</Link>
+          <div className="flex items-center gap-2 text-xs text-slate-400 font-semibold uppercase tracking-wider">
+            <Link href="/users" className="hover:text-blue-600 transition">User Management</Link>
             <span>/</span>
-            <span className="text-slate-300">Tags Explorer</span>
+            <span className="text-slate-700">Tags Explorer</span>
           </div>
-          <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-slate-100 to-slate-300 bg-clip-text text-transparent mt-1">
-            Segmented Tags Explorer
+          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 mt-1">
+            Segmented Tags{' '}
+            <span className="text-blue-600 underline decoration-blue-200 decoration-wavy underline-offset-8">
+              Explorer
+            </span>
           </h1>
-          <p className="text-slate-400 text-sm">
+          <p className="text-slate-500 text-sm">
             View and manage students grouped by academic, division, and event registration tags.
           </p>
         </div>
         <Link
           href="/users"
-          className="self-start sm:self-auto px-4 py-2 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white rounded-xl border border-white/5 text-xs font-bold transition flex items-center gap-2"
+          className="self-start sm:self-auto px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-950 rounded-xl border border-slate-200 text-xs font-bold transition flex items-center gap-2"
         >
           ← Back to Users
         </Link>
       </div>
 
       {/* Tabs Selector */}
-      <div className="flex border-b border-white/5 gap-2">
+      <div className="flex border-b border-slate-200 gap-2">
         <Link
           href={`/users/tags?activeTab=year`}
           className={`px-5 py-3 text-xs font-bold uppercase tracking-wider border-b-2 transition ${
             activeTab === 'year'
-              ? 'border-indigo-500 text-indigo-400'
-              : 'border-transparent text-slate-400 hover:text-slate-200 hover:border-white/10'
+              ? 'border-blue-600 text-blue-600'
+              : 'border-transparent text-slate-500 hover:text-blue-600 hover:border-slate-300'
           }`}
         >
           📅 Academic Years
@@ -131,8 +134,8 @@ export default async function TaggedStudentsPage({ searchParams }: PageProps) {
           href={`/users/tags?activeTab=college`}
           className={`px-5 py-3 text-xs font-bold uppercase tracking-wider border-b-2 transition ${
             activeTab === 'college'
-              ? 'border-indigo-500 text-indigo-400'
-              : 'border-transparent text-slate-400 hover:text-slate-200 hover:border-white/10'
+              ? 'border-blue-600 text-blue-600'
+              : 'border-transparent text-slate-500 hover:text-blue-600 hover:border-slate-300'
           }`}
         >
           🏫 Academic Colleges
@@ -141,8 +144,8 @@ export default async function TaggedStudentsPage({ searchParams }: PageProps) {
           href={`/users/tags?activeTab=club`}
           className={`px-5 py-3 text-xs font-bold uppercase tracking-wider border-b-2 transition ${
             activeTab === 'club'
-              ? 'border-indigo-500 text-indigo-400'
-              : 'border-transparent text-slate-400 hover:text-slate-200 hover:border-white/10'
+              ? 'border-blue-600 text-blue-600'
+              : 'border-transparent text-slate-500 hover:text-blue-600 hover:border-slate-300'
           }`}
         >
           🏆 Active Club Registrations
@@ -152,10 +155,10 @@ export default async function TaggedStudentsPage({ searchParams }: PageProps) {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Tags Side Navigation */}
         <div className="lg:col-span-1 space-y-3">
-          <span className="block text-[10px] text-slate-500 font-bold uppercase tracking-wider pl-1">
+          <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider pl-1">
             Select Tag
           </span>
-          <div className="glass-panel p-2 rounded-2xl border border-white/5 flex flex-col gap-1">
+          <div className="glass-panel p-2 rounded-2xl flex flex-col gap-1">
             {tagList.length === 0 ? (
               <p className="text-xs text-slate-500 text-center py-6">No tags available in this category.</p>
             ) : (
@@ -168,13 +171,13 @@ export default async function TaggedStudentsPage({ searchParams }: PageProps) {
                     href={`/users/tags?activeTab=${activeTab}&tag=${encodeURIComponent(tag)}`}
                     className={`flex items-center justify-between p-3 rounded-xl text-xs font-semibold transition ${
                       isSelected
-                        ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'
-                        : 'text-slate-400 hover:bg-white/5 hover:text-slate-200 border border-transparent'
+                        ? 'bg-blue-50 text-blue-600 border border-blue-200'
+                        : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600 border border-transparent'
                     }`}
                   >
                     <span className="truncate max-w-[130px]">{tag}</span>
                     <span className={`px-2 py-0.5 rounded-lg text-[9px] font-bold ${
-                      isSelected ? 'bg-indigo-500/20 text-indigo-300' : 'bg-slate-900 text-slate-500 border border-white/5'
+                      isSelected ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-500 border border-slate-200'
                     }`}>
                       {count}
                     </span>
@@ -188,15 +191,15 @@ export default async function TaggedStudentsPage({ searchParams }: PageProps) {
         {/* Tagged Students Table/List */}
         <div className="lg:col-span-3 space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-bold text-slate-200 flex items-center gap-2">
-              <span>🏷️</span> Tagged: <span className="text-indigo-400 font-black">{activeTag || 'None'}</span>
+            <h2 className="text-base font-bold text-slate-800 flex items-center gap-2">
+              <span>🏷️</span> Tagged: <span className="text-blue-600 font-black">{activeTag || 'None'}</span>
             </h2>
-            <span className="text-xs text-slate-400 font-semibold">
+            <span className="text-xs text-slate-500 font-semibold">
               {(activeStudents).length} student{activeStudents.length !== 1 && 's'} listed
             </span>
           </div>
 
-          <div className="glass-panel rounded-2xl border border-white/5 overflow-hidden">
+          <div className="glass-panel rounded-2xl overflow-hidden">
             {!activeTag ? (
               <p className="text-xs text-slate-500 text-center py-16">
                 Please select a tag from the left sidebar.
@@ -206,23 +209,23 @@ export default async function TaggedStudentsPage({ searchParams }: PageProps) {
                 No students belong to this tag category.
               </p>
             ) : (
-              <div className="divide-y divide-white/5">
+              <div className="divide-y divide-slate-100">
                 {activeStudents.map((student: any) => (
-                  <div key={student.user_id} className="p-4 flex items-center justify-between hover:bg-white/2 transition text-xs">
+                  <div key={student.user_id} className="p-4 flex items-center justify-between hover:bg-slate-50/50 transition text-xs">
                     <div className="space-y-1.5">
                       <div className="flex items-center gap-3">
-                        <h3 className="font-bold text-slate-200 text-sm">{student.name}</h3>
-                        <span className="px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 text-[9px] font-bold">
+                        <h3 className="font-bold text-slate-800 text-sm">{student.name}</h3>
+                        <span className="px-2 py-0.5 rounded bg-blue-50 text-blue-600 border border-blue-200 text-[9px] font-bold">
                           Year {student.year}
                         </span>
                       </div>
-                      <p className="text-slate-400">📧 {student.profiles?.email}</p>
+                      <p className="text-slate-600">📧 {student.profiles?.email}</p>
                       <div className="flex flex-wrap gap-2 pt-0.5">
-                        <span className="px-2 py-0.5 rounded bg-white/5 border border-white/5 text-[9px] text-slate-400 font-semibold">
+                        <span className="px-2 py-0.5 rounded bg-slate-100 border border-slate-200 text-[9px] text-slate-600 font-semibold">
                           🏫 {student.college}
                         </span>
-                        {studentClubMap[student.user_id] && Array.from(studentClubMap[student.user_id]).map((clubName) => (
-                          <span key={clubName} className="px-2 py-0.5 rounded bg-blue-500/10 border border-blue-500/20 text-[9px] text-blue-400 font-bold">
+                        {studentClubMap[student.user_id] && Array.from(studentClubMap[student.user_id]!).map((clubName) => (
+                          <span key={clubName} className="px-2 py-0.5 rounded bg-blue-50 border border-blue-200 text-[9px] text-blue-600 font-bold">
                             🏆 {clubName}
                           </span>
                         ))}
@@ -231,7 +234,7 @@ export default async function TaggedStudentsPage({ searchParams }: PageProps) {
                     <form action={handleDelete.bind(null, student.user_id)}>
                       <button
                         type="submit"
-                        className="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl font-semibold transition"
+                        className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl font-semibold transition"
                       >
                         Delete
                       </button>

@@ -5,6 +5,7 @@ import { getCachedClubs, getCachedEvents } from '../../lib/queries';
 import { logoutAction } from '../actions/auth';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { ClubsEligibilityGrid } from '../components/ClubsEligibilityGrid';
+import { StudentProfileForm } from '../components/StudentProfileForm';
 
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -119,12 +120,20 @@ export default async function StudentPortal({ searchParams }: PageProps) {
               >
                 My Registrations
               </Link>
+              <Link
+                href="/student?tab=profile"
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap ${
+                  activeTab === 'profile' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                My Profile
+              </Link>
             </nav>
           </div>
           <div className="flex items-center gap-4 flex-shrink-0">
             <ThemeToggle />
             <span className="text-sm text-muted-foreground hidden lg:inline">
-              Welcome, <strong className="text-foreground">{profile.name}</strong> ({profile.college})
+              Welcome, <strong className="text-foreground">{profile.name.trim().split(' ')[0]}</strong>
             </span>
             <form action={logoutAction}>
               <button type="submit" className="px-3.5 py-1.5 rounded-lg border border-border hover:bg-muted text-xs font-semibold transition">
@@ -326,6 +335,11 @@ export default async function StudentPortal({ searchParams }: PageProps) {
                   ))}
               </div>
             )}
+          </div>
+        )}
+        {activeTab === 'profile' && (
+          <div className="space-y-6">
+            <StudentProfileForm profile={profile} />
           </div>
         )}
       </main>

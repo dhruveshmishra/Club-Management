@@ -242,16 +242,6 @@ export function CoordinatorDashboardClient({
                     <div key={evt.id} className="bg-card p-6 rounded-2xl border border-border shadow-sm flex flex-col justify-between hover:border-primary/50 transition-colors">
                       {editingEventId === evt.id ? (
                         <form action={(formData) => handleUpdateEvent(evt.id, formData)} className="flex-1 flex flex-col gap-3">
-                          {/* We need to pass hidden fields for the existing event data that isn't being edited so updateEventAction works */}
-                          <input type="hidden" name="prizePool" value={evt.prize_pool || 0} />
-                          <input type="hidden" name="teamSize" value={evt.team_size || 1} />
-                          <input type="hidden" name="mode" value={evt.mode} />
-                          <input type="hidden" name="status" value={evt.status} />
-                          <input type="hidden" name="startDate" value={evt.start_date} />
-                          <input type="hidden" name="endDate" value={evt.end_date} />
-                          <input type="hidden" name="registrationDeadline" value={evt.registration_deadline} />
-                          <input type="hidden" name="highlightsText" value={evt.highlights_text || ''} />
-
                           <div className="flex items-center justify-between mb-2">
                             <span className="text-xs font-bold text-primary">Edit Event Details</span>
                             <button type="button" onClick={() => setEditingEventId(null)} className="p-1 text-muted-foreground hover:text-foreground bg-muted rounded-md">
@@ -259,23 +249,68 @@ export function CoordinatorDashboardClient({
                             </button>
                           </div>
                           
-                          <input 
-                            type="text" 
-                            name="title" 
-                            defaultValue={evt.title} 
-                            required 
-                            className="w-full bg-background border border-input rounded-xl px-3 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground" 
-                            placeholder="Event Title"
-                          />
-                          
-                          <textarea 
-                            name="description" 
-                            defaultValue={evt.description} 
-                            required 
-                            rows={4} 
-                            className="w-full bg-background border border-input rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground resize-none" 
-                            placeholder="Event Description"
-                          />
+                          <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
+                            <div>
+                              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Title</label>
+                              <input type="text" name="title" defaultValue={evt.title} required className="w-full bg-background border border-input rounded-xl px-3 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground" placeholder="Event Title" />
+                            </div>
+                            
+                            <div>
+                              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Description</label>
+                              <textarea name="description" defaultValue={evt.description} required rows={3} className="w-full bg-background border border-input rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground resize-none" placeholder="Event Description" />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Mode</label>
+                                <select name="mode" defaultValue={evt.mode} className="w-full bg-background border border-input rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground">
+                                  <option value="offline">Offline</option>
+                                  <option value="online">Online</option>
+                                </select>
+                              </div>
+                              <div>
+                                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Status</label>
+                                <select name="status" defaultValue={evt.status} className="w-full bg-background border border-input rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground">
+                                  <option value="upcoming">Upcoming</option>
+                                  <option value="ongoing">Ongoing</option>
+                                  <option value="past">Past</option>
+                                </select>
+                              </div>
+                              
+                              <div>
+                                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Prize Pool ($)</label>
+                                <input type="number" name="prizePool" defaultValue={evt.prize_pool || 0} min="0" step="0.01" className="w-full bg-background border border-input rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground" />
+                              </div>
+                              <div>
+                                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Team Size</label>
+                                <input type="number" name="teamSize" defaultValue={evt.team_size || 1} min="1" className="w-full bg-background border border-input rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground" />
+                              </div>
+
+                              <div>
+                                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Start Date</label>
+                                <input type="datetime-local" name="startDate" defaultValue={evt.start_date ? new Date(evt.start_date).toISOString().slice(0, 16) : ''} required className="w-full bg-background border border-input rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground" />
+                              </div>
+                              <div>
+                                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">End Date</label>
+                                <input type="datetime-local" name="endDate" defaultValue={evt.end_date ? new Date(evt.end_date).toISOString().slice(0, 16) : ''} required className="w-full bg-background border border-input rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground" />
+                              </div>
+                            </div>
+                            
+                            <div>
+                              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Registration Deadline</label>
+                              <input type="datetime-local" name="registrationDeadline" defaultValue={evt.registration_deadline ? new Date(evt.registration_deadline).toISOString().slice(0, 16) : ''} required className="w-full bg-background border border-input rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground" />
+                            </div>
+
+                            <div>
+                              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Highlights (Comma separated)</label>
+                              <input type="text" name="highlightsText" defaultValue={evt.highlights_text || ''} className="w-full bg-background border border-input rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground" placeholder="e.g. Free T-shirts, Medals" />
+                            </div>
+
+                            <div>
+                              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Banner Image URL</label>
+                              <input type="url" name="photoUrl" defaultValue={evt.photo_urls?.[0] || ''} className="w-full bg-background border border-input rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground" placeholder="https://example.com/image.jpg" />
+                            </div>
+                          </div>
                           
                           <div className="mt-auto pt-4 flex gap-2">
                             <button type="submit" className="flex-1 py-2 bg-primary text-primary-foreground rounded-lg text-xs font-bold shadow-sm hover:bg-primary/90 transition">
@@ -308,8 +343,8 @@ export function CoordinatorDashboardClient({
                             <p className="text-sm text-muted-foreground line-clamp-2 mb-6">{evt.description}</p>
                             
                             <div className="grid grid-cols-2 gap-y-3 text-xs text-muted-foreground font-medium">
-                              <div className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /> Start: {new Date(evt.start_date).toLocaleDateString()}</div>
-                              <div className="flex items-center gap-1.5"><FileText className="w-3.5 h-3.5" /> Deadline: {new Date(evt.registration_deadline).toLocaleDateString()}</div>
+                              <div className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /> Start: {new Date(evt.start_date).toLocaleDateString('en-US')}</div>
+                              <div className="flex items-center gap-1.5"><FileText className="w-3.5 h-3.5" /> Deadline: {new Date(evt.registration_deadline).toLocaleDateString('en-US')}</div>
                               <div className="flex items-center gap-1.5">👥 Team Size: {evt.team_size}</div>
                               <div className="flex items-center gap-1.5">💰 Pool: ${evt.prize_pool}</div>
                             </div>

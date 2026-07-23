@@ -100,6 +100,7 @@ export async function updateEventAction(eventId: string, formData: FormData) {
   const endDate = formData.get('endDate') as string;
   const regDeadline = formData.get('registrationDeadline') as string;
   const highlightsText = formData.get('highlightsText') as string;
+  const photoUrl = formData.get('photoUrl') as string;
 
   const supabase = await createServerSideClient();
 
@@ -126,6 +127,7 @@ export async function updateEventAction(eventId: string, formData: FormData) {
         end_date: endDate,
         registration_deadline: regDeadline,
         highlights_text: highlightsText || null,
+        photo_urls: photoUrl ? [photoUrl] : [],
       })
       .eq('id', eventId)
       .eq('club_id', coord.club_id); // Ensure event belongs to their club

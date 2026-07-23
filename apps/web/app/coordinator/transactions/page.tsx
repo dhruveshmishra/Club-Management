@@ -158,7 +158,7 @@ export default async function FinancialLedgerPage() {
                     <div className="space-y-1">
                       <h4 className="text-sm font-semibold">{tx.description}</h4>
                       <div className="text-[10px] text-slate-500">
-                        Posted on: {new Date(tx.date).toLocaleDateString()} | Author: {tx.coordinator_profiles?.name}
+                        Posted on: {new Date(tx.date).toLocaleDateString('en-US')} | Author: {tx.coordinator_profiles?.name}
                       </div>
                     </div>
                     <span className={`text-sm font-bold ${tx.type === 'income' ? 'text-emerald-400' : 'text-red-400'}`}>

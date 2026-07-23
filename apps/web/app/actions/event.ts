@@ -17,8 +17,10 @@ export async function registerForEventAction(eventId: string) {
     return { error: 'Unauthorized. Please sign in.' };
   }
 
-  // Verify the user is a student
-  const { data: student } = await supabase
+  // Verify the user is a student using service client to bypass RLS
+  const { createServiceClient } = await import('../../lib/supabase');
+  const serviceClient = createServiceClient();
+  const { data: student } = await serviceClient
     .from('student_profiles')
     .select('user_id')
     .eq('user_id', user.id)
@@ -29,7 +31,7 @@ export async function registerForEventAction(eventId: string) {
   }
 
   // Check if already registered
-  const { data: existingReg } = await supabase
+  const { data: existingReg } = await serviceClient
     .from('registrations')
     .select('id')
     .eq('event_id', eventId)
@@ -41,7 +43,7 @@ export async function registerForEventAction(eventId: string) {
   }
 
   // Check event registration deadline
-  const { data: event, error: eventError } = await supabase
+  const { data: event, error: eventError } = await serviceClient
     .from('events')
     .select('registration_deadline')
     .eq('id', eventId)

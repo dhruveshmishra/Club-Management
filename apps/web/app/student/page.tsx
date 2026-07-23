@@ -374,7 +374,7 @@ function EventCard({ event, registered }: { event: any; registered: boolean }) {
             <div>🏆 Pool: <strong className="text-foreground">${event.prize_pool}</strong></div>
             <div>👥 Size: <strong className="text-foreground">{event.team_size} {event.team_size > 1 ? 'students' : 'student'}</strong></div>
             <div className="col-span-2 mt-1 pt-1.5 border-t border-border">
-              📅 Deadline: <span className="text-foreground">{new Date(event.registration_deadline).toLocaleDateString()}</span>
+              📅 Deadline: <span className="text-foreground">{new Date(event.registration_deadline).toLocaleDateString('en-US')}</span>
             </div>
           </div>
         </div>

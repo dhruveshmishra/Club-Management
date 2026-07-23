@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { createServerSideClient, createServiceClient } from '../../../../lib/supabase';
 import { registerForEventAction } from '../../../actions/event';
 import { ThemeToggle } from '../../../components/ThemeToggle';
+import { RegisterButton } from './RegisterButton';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -45,11 +46,7 @@ export default async function EventDetailsPage({ params }: PageProps) {
   const isRegistered = !!registration;
   const isDeadlinePassed = new Date() > new Date(event.registration_deadline);
 
-  // Form submission handler
-  const handleRegister = async () => {
-    'use server';
-    await registerForEventAction(eventId);
-  };
+
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
@@ -267,14 +264,7 @@ export default async function EventDetailsPage({ params }: PageProps) {
                       Registration Closed
                     </div>
                   ) : (
-                    <form action={handleRegister}>
-                      <button
-                        type="submit"
-                        className="w-full py-4 bg-gradient-to-r from-primary to-indigo-600 hover:from-primary/90 hover:to-indigo-600/90 text-primary-foreground rounded-xl font-bold text-base transition-all duration-200 shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0"
-                      >
-                        Register Now
-                      </button>
-                    </form>
+                    <RegisterButton eventId={eventId} />
                   )}
                 </div>
               </div>
